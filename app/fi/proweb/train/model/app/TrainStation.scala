@@ -2,6 +2,15 @@ package fi.proweb.train.model.app
 
 import fi.proweb.train.model.AppData
 
+object TrainStation {
+  def apply(stationCode: String, title: String): TrainStation = {
+    val station = new TrainStation
+    station.stationCode = Some(stationCode)
+    station.title = Some(title)
+    station
+  }
+}
+
 class TrainStation extends AppData[TrainStation] {
 
   var guid: Option[String] = None
