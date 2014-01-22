@@ -18,24 +18,20 @@ import util.Properties
 object Application extends Controller {
 
   implicit val timeout = Timeout(5 seconds)
-  
-  def index = Action {
-    Ok(views.html.index("Your new application is ready."))
-  }
 
-  def createObserver = Action.async {
+  def index = Action.async {
     val locLat = 61.348997
     val locLon = 23.761861
     val future = (Global.trainObserverController ? CreateObserver(locLat, locLon)).mapTo[ObserverCreated]
     future.map(_ match {
-      case ObserverCreated(id: Long) => Ok("" + id)
+      case ObserverCreated(id: Long) => Ok(views.html.index(id))
     })
   }
   
-  def getTraintable(observerId: Long) = Action.async {
+  def traintable(observerId: Long) = Action.async {
     val future = (Global.trainObserverController ? GetObserversTraintable(observerId)).mapTo[Traintable]
     future.map(_ match {
-      case Traintable(traintable: List[Train]) => Ok(traintable mkString(Properties.lineSeparator + Properties.lineSeparator))
+      case Traintable(traintable: List[Train]) => Ok(views.html.traintable(traintable mkString(Properties.lineSeparator + Properties.lineSeparator)))
     })
   }
    

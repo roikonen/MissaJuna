@@ -29,7 +29,7 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
 
   implicit val timeout = Timeout(5 seconds)
   
-  private val inactiveObserverTimeToLive = 1 minute
+  private val inactiveObserverTimeToLive = 30 seconds
   
   private var observerIdCounter = 0L
   private var observers = Map[Long, (ActorRef, Deadline)]()
@@ -57,7 +57,7 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
   def getTraintable(id: Long, requester: ActorRef) {
     val observerTuple = observers.get(id)
     if (observerTuple == None) {
-      Traintable(List[Train]())
+      requester ! Traintable(List[Train]())
     } else {
       val observer = observerTuple.get._1
       observers += (id -> (observer, inactiveObserverTimeToLive fromNow))
@@ -67,10 +67,13 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
   }
   
   def cleanObservers {
-    observers = observers.filter {
+    observers = observers.filterNot {
       case (id: Long, (observer: ActorRef, deadline: Deadline)) => {
-        trainListController.tell(Unregister, observer)
-        observer ! PoisonPill
+        if (deadline.isOverdue) {
+          log.debug("Timeout for observer: " + observer)
+          trainListController.tell(Unregister, observer)
+          observer ! PoisonPill
+        }
         deadline.isOverdue
       }
     }
