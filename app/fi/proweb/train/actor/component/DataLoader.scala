@@ -32,7 +32,7 @@ class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps:
   validator ! DeliveryTarget(formatter)
   formatter ! DeliveryTarget(context.self)
   
-  val CODEC = Codec.ISO8859
+  val CODEC = Codec.UTF8
   
   var subscribers = Set[ActorRef]()
   var deliverAlsoTo: Option[ActorRef] = None
