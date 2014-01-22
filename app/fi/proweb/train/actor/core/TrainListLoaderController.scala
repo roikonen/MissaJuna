@@ -23,8 +23,22 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
   val trains = Map[String, Train]()
   
   //----- Will get better when TrainListController completes -----
-  val allTrains = Set[String]("IC287")
-  val trainsToObserve = Set[String]("IC287")
+  val allTrains = Set[String](
+      "IC181", "IC287", "IC49", "IC2176", "IC917",
+      "IC173", "IC50", "S89", "IC2175", "IC49",
+      "S52", "IC2177", "S80", "S44", "S84",
+      "IC2165", "P910", "S46", "IC285", "P909",
+      "IC2168", "S45", "H9645", "IC911", "IC47",
+      "IC2170"
+    )
+  val trainsToObserve = Set[String](
+      "IC181", "IC287", "IC49", "IC2176", "IC917",
+      "IC173", "IC50", "S89", "IC2175", "IC49",
+      "S52", "IC2177", "S80", "S44", "S84",
+      "IC2165", "P910", "S46", "IC285", "P909",
+      "IC2168", "S45", "H9645", "IC911", "IC47",
+      "IC2170"
+    )
   //----- Will get better when TrainListController completes -----
   
   createAllTrains
