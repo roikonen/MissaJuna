@@ -34,19 +34,18 @@ class Train extends AppData[Train] {
     distance.map((dist: Int) => (dist.toDouble / 100d).round.toDouble / 10d)
   }
   
-  def nextStation: Option[TrainStation] = {  
+  def nextStation: TrainStation = {  
     val revStations = stations.reverse
     if (revStations.exists(_.completed.getOrElse(false))) {
       val nextStationIndex = revStations.indexWhere(_.completed.getOrElse(false))
-      Some(revStations(nextStationIndex - 1))
+      revStations(nextStationIndex - 1)
     } else {
-      None
+      stations.head
     }
   }
   
   def nextStationCode: String = {
-    if (nextStation != None) nextStation.get.stationCode.getOrElse("?")
-    else "?"
+    nextStation.stationCode.getOrElse("?")
   }
   
   def stationTitle(stationCode: String): String = {
