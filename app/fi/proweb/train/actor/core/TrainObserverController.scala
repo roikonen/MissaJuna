@@ -48,7 +48,7 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
     observerIdCounter += 1L
     
     val observer = Akka.system().actorOf(TrainObserver.props(trainController, locLat, locLon), "TrainObserver_" + observerId)
-    trainListController.tell(Register(new TrainStation(), new TrainStation()), observer)
+    trainListController.tell(Register(locLat, locLon), observer)
     
     observers += (observerId -> (observer, inactiveObserverTimeToLive fromNow))
     sender ! ObserverCreated(observerId)

@@ -6,6 +6,8 @@ import fi.proweb.train.helper.HeadingConverter
 import scala.xml.XML
 import scala.xml.Node
 import fi.proweb.train.model.app.TrainStation
+import models.TrainPoint
+import java.util.Date
 
 class TrainFormatter extends DataFormatter[Train] {
 
@@ -42,7 +44,7 @@ class TrainFormatter extends DataFormatter[Train] {
         train.stations += trainStation
       }
     }
-           
+    
     train
   }
   

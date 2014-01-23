@@ -20,6 +20,8 @@ case class DeliveryTarget(deliveryTarget: ActorRef)
 case object Stop
 case class Start(interval: FiniteDuration)
 case class Schedule(interval: FiniteDuration)
+case object Freeze
+case object Melt
 
 class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps: Props, val url: String) extends Actor with ActorLogging {
 
@@ -41,6 +43,10 @@ class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps:
   var dataCache: Option[(Deadline, T)] = None
   var latestLoadFuture: Option[Future[LoadData]] = None
     
+  var freezed = false
+  
+  var lastInterval: Option[FiniteDuration] = None
+  
   def receive = {
     case Subscribe => subscribers.add(sender)
     case Unsubscribe => subscribers.remove(sender)
@@ -48,24 +54,38 @@ class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps:
     case Get => deliverAlsoTo = Some(sender); deliverFromCacheOrLoad
     case Invalid(invalid: String) =>  loadFailed(invalid)
     case Stop => scheduler ! Stop
-    case msg: Start => scheduler ! msg 
-    case Schedule(interval: FiniteDuration) => scheduler ! Schedule(interval)
+    case Start(interval: FiniteDuration) => start(interval) 
+    case Schedule(interval: FiniteDuration) => schedule(interval)
     case AppDataMsg(appdata: T) => deliverToSubscribers(appdata)
+    case Freeze => freezed = true
+    case Melt => freezed = false
+  }
+  
+  def start(interval: FiniteDuration) {
+    scheduler ! Start(interval)
+    lastInterval = Some(interval)
+  }
+  
+  def schedule(interval: FiniteDuration) {
+    scheduler ! Schedule(interval)
+    lastInterval = Some(interval)
   }
   
   def deliverFromCacheOrLoad = {
-    if (getCache != None) {
-      deliverToSubscribers(getCache.get)
-    } else if (latestLoadFuture.forall(_.isCompleted)) {
-      latestLoadFuture = Some(load)
-      latestLoadFuture.get pipeTo validator
+    if (!freezed) {
+      if (getCache != None) {
+        deliverToSubscribers(getCache.get)
+      } else if (latestLoadFuture.forall(_.isCompleted)) {
+        latestLoadFuture = Some(load)
+        latestLoadFuture.get pipeTo validator
+      }
     }
   }
   
   def load = future {
     log.debug("Starting to load url: " + url + "...")
     val loadData = scala.io.Source.fromURL(url)(CODEC).mkString
-    log.debug("Loaded loadData from url: " + url + ".")
+    log.info("Loaded loadData from url: " + url + " (interval: " + lastInterval.getOrElse("None") + ")")
     LoadData(loadData)
   }
   

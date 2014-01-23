@@ -7,6 +7,5 @@ import fi.proweb.train.actor.component.validator.TrainListDataValidator
 import fi.proweb.train.actor.component.formatter.TrainListFormatter
 import fi.proweb.train.model.app.TrainList
 
-class TrainListLoader(url: String) extends DataLoader[TrainList](Props[TrainListDataValidator], Props[TrainListFormatter], url) {
-
-}
+class TrainListLoader extends DataLoader[TrainList](Props[TrainListDataValidator], Props[TrainListFormatter], 
+    "http://188.117.35.14/TrainRSS/TrainService.svc/AllTrains")

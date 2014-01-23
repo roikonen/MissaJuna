@@ -30,8 +30,8 @@ class Train extends AppData[Train] {
   
   var stations: MutableList[TrainStation] = MutableList[TrainStation]()
   
-  def distanceInKm: Option[Int] = {
-    distance.map((dist: Int) => (dist.toDouble / 1000d).round.toInt)
+  def distanceInKm: Option[Double] = {
+    distance.map((dist: Int) => (dist.toDouble / 100d).round.toDouble / 10d)
   }
   
   def nextStation: Option[TrainStation] = {  

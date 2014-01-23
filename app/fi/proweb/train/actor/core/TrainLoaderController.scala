@@ -11,10 +11,12 @@ import fi.proweb.train.actor.component.Start
 import akka.actor.ActorLogging
 import fi.proweb.train.actor.component.Unsubscribe
 
-case class CreateTrain(train: String)
 case class SubscribeTrains(trains: Set[String])
 case object UnsubscribeTrains
 case class ScheduleTrain(train: String, interval: FiniteDuration)
+case class Freeze(train: String)
+case class CreateOrMelt(train: String)
+case class Melt(train: String)
 
 class TrainLoaderController extends Actor with ActorLogging {
 
@@ -22,15 +24,21 @@ class TrainLoaderController extends Actor with ActorLogging {
   val observers = Map[ActorRef, Map[String, FiniteDuration]]()
   
   def receive = {
-    case CreateTrain(train: String) => create(train, sender)
+    case CreateOrMelt(train: String) => createOrMelt(train, sender)
     case SubscribeTrains(trains: Set[String]) => subscribe(sender, trains)
     case UnsubscribeTrains => unsubscribe(sender)
     case ScheduleTrain(train: String, interval: FiniteDuration) => schedule(sender, train, interval)
+    case Freeze(train: String) => trainLoaders(train) ! Freeze
+    case Melt(train: String) => trainLoaders(train) ! Melt
   }
   
-  def create(train: String, requester: ActorRef) {
-    trainLoaders += (train -> context.actorOf(TrainLoader.props(train), "Trainloader_" + train))
-    trainLoaders(train).tell(fi.proweb.train.actor.component.Get, requester)
+  def createOrMelt(train: String, requester: ActorRef) {
+    if (trainLoaders.isDefinedAt(train)) {
+      trainLoaders(train) ! Melt
+    } else {
+	    trainLoaders += (train -> context.actorOf(TrainLoader.props(train), "Trainloader_" + train))
+	    trainLoaders(train).tell(fi.proweb.train.actor.component.Get, requester)
+    }
   }
   
   def schedule(observer: ActorRef, train: String, interval: FiniteDuration) {
@@ -76,4 +84,5 @@ class TrainLoaderController extends Actor with ActorLogging {
       trainLoaders(train) ! fi.proweb.train.actor.component.Schedule(newInterval)
     }
   }
+
 }

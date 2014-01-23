@@ -10,46 +10,86 @@ import fi.proweb.train.actor.component.AppDataMsg
 import fi.proweb.train.model.app.Train
 import scala.collection.mutable.Map
 import fi.proweb.train.actor.component.Unsubscribe
+import fi.proweb.train.actor.component.loader.TrainListLoader
+import fi.proweb.train.model.app.TrainList
+import fi.proweb.train.actor.component.Subscribe
+import fi.proweb.train.actor.component.Start
+import scala.collection.mutable.Queue
 
-case class Register(track: (TrainStation, TrainStation))
-case object Unregister
+trait TrainListLoaderControllerMsg
+case class Register(locLat: Double, locLon: Double) extends TrainListLoaderControllerMsg
+case object Unregister extends TrainListLoaderControllerMsg
 
 object TrainListLoaderController {
   def props(trainLoaderController: ActorRef): Props = Props(new TrainListLoaderController(trainLoaderController))
 }
 
 class TrainListLoaderController(val trainLoaderController: ActorRef) extends Actor with ActorLogging {
-
-  val trains = Map[String, Train]()
   
-  //----- Will get better when TrainListController completes -----
-  val allTrains = Set[String](
-      "IC181", "IC287", "IC49", "IC2176", "IC917",
-      "IC173", "IC50", "S89", "IC2175", "IC49",
-      "S52", "IC2177", "S80", "S44", "S84",
-      "IC2165", "P910", "S46", "IC285", "P909",
-      "IC2168", "S45", "H9645", "IC911", "IC47",
-      "IC2170"
-    )
-  val trainsToObserve = Set[String](
-      "IC181", "IC287", "IC49", "IC2176", "IC917",
-      "IC173", "IC50", "S89", "IC2175", "IC49",
-      "S52", "IC2177", "S80", "S44", "S84",
-      "IC2165", "P910", "S46", "IC285", "P909",
-      "IC2168", "S45", "H9645", "IC911", "IC47",
-      "IC2170"
-    )
-  //----- Will get better when TrainListController completes -----
+  var allTrains = Set[String]()
   
-  createAllTrains
+  val loader = context.actorOf(Props[TrainListLoader], "TrainListLoader")
+  loader ! Subscribe
+  loader ! Start(10 minutes)
+    
+  val recorder = context.actorOf(Props[TrainRecorder], "TrainRecorder")
+  //recorder ! Record
   
+  val msgQ = Queue[(TrainListLoaderControllerMsg, ActorRef)]()
+        
   def receive = {
-    case Register(track: (TrainStation, TrainStation)) => trainLoaderController.tell(SubscribeTrains(trainsToObserve), sender)
-    case Unregister => trainLoaderController.tell(UnsubscribeTrains, sender)
-    case AppDataMsg(train: Train) => trains += (train.guid.get -> train); log.debug("Train: " + train.title.get + " created.")
+    case msg: Register => register(msg, sender)
+    case Unregister => unRegister(Unregister, sender)
+    case AppDataMsg(appdata) => appdata match {
+      case train: Train => processMsgQ
+      case trainList: TrainList => processTrainList(trainList)
+    }
   }
   
-  def createAllTrains {
-    allTrains.foreach(trainLoaderController ! CreateTrain(_))
+  def register(msg: TrainListLoaderControllerMsg, sender: ActorRef) {
+    if (allTrains.size == 0) {
+      addToMsgQ(msg, sender)
+    } else {
+      val trainsToObserve = allTrains
+      trainLoaderController.tell(SubscribeTrains(trainsToObserve), sender)
+    }
   }
+  
+  def unRegister(msg: TrainListLoaderControllerMsg, sender: ActorRef) {
+    if (allTrains.size == 0) {
+      addToMsgQ(msg, sender)
+    } else {
+      trainLoaderController.tell(UnsubscribeTrains, sender)
+    }
+  }
+  
+  def addToMsgQ(msg: TrainListLoaderControllerMsg, sender: ActorRef) {
+    msgQ.enqueue((msg, sender))
+  }
+  
+  def processMsgQ {
+    while (msgQ.nonEmpty) {
+      val msg = msgQ.dequeue
+      context.self.tell(msg._1, msg._2)
+    }
+  }
+  
+  def processTrainList(trainList: TrainList) {  
+
+    recorder ! Trains(trainList)
+    
+    val oldTrains = allTrains
+    allTrains = trainList.trains.keySet.toSet
+    
+    removedTrains(oldTrains, allTrains).foreach(trainLoaderController ! Freeze(_))
+    newTrains(oldTrains, allTrains).foreach(trainLoaderController ! CreateOrMelt(_))
+    
+    processMsgQ
+  }
+  
+  def newTrains(oldTrainSet: Set[String], newTrainSet: Set[String]): Set[String] = newTrainSet diff oldTrainSet
+  
+  def removedTrains(oldTrainSet: Set[String], newTrainSet: Set[String]): Set[String] = oldTrainSet diff newTrainSet
+  
+  def remainingTrains(oldTrainSet: Set[String], newTrainSet: Set[String]): Set[String] = oldTrainSet intersect newTrainSet
 }
