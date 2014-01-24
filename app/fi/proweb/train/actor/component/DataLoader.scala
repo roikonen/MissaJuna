@@ -85,7 +85,7 @@ class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps:
   def load = future {
     log.debug("Starting to load url: " + url + "...")
     val loadData = scala.io.Source.fromURL(url)(CODEC).mkString
-    log.info("Loaded loadData from url: " + url + " (interval: " + lastInterval.getOrElse("None") + ")")
+    log.debug("Loaded loadData from url: " + url + " (interval: " + lastInterval.getOrElse("None") + ")")
     LoadData(loadData)
   }
   

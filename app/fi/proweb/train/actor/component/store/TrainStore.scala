@@ -51,6 +51,9 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
   }
   
   def createTraintable: List[Train] = {
+    // Needs a better logic for appriaching trains observation. 
+    // An alternative way could also be building the logic into train loader. 
+    
     // Otetaan mukaan myös junat jotka liikkuvan max 1m/s (jos ottoväli 5s) pois päin 
     // (gps:n epätarkkuudesta johtuen)
     var newTraintable: List[Train] = List()
