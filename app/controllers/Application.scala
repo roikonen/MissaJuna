@@ -14,6 +14,7 @@ import fi.proweb.train.actor.core.GetObserversTraintable
 import fi.proweb.train.actor.core.Traintable
 import fi.proweb.train.model.app.Train
 import util.Properties
+import models.TrainPoint
 
 object Application extends Controller {
 
@@ -33,6 +34,10 @@ object Application extends Controller {
     future.map(_ match {
       case Traintable(traintable: List[Train]) => Ok(views.html.traintable(traintable mkString(Properties.lineSeparator + Properties.lineSeparator)))
     })
+  }
+  
+  def countTrainPoints = Action.apply {
+    Ok(TrainPoint.countAll.toString)
   }
    
 }
