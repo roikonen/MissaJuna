@@ -30,10 +30,10 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
   
   val loader = context.actorOf(Props[TrainListLoader], "TrainListLoader")
   loader ! Subscribe
-  loader ! Start(10 minutes)
+  loader ! Start(5 seconds)
     
   val recorder = context.actorOf(Props[TrainRecorder], "TrainRecorder")
-  //recorder ! Record
+  recorder ! Record
   
   val msgQ = Queue[(TrainListLoaderControllerMsg, ActorRef)]()
         
