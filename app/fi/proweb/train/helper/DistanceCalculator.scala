@@ -1,5 +1,7 @@
 package fi.proweb.train.helper
 
+import java.math.BigDecimal
+
 object DistanceCalculator {
 
   // Earth radius in km
@@ -25,21 +27,21 @@ object DistanceCalculator {
   
   /**
    * Rectangle rounding circle with defined centerpoint coordinates and radius in meters
-   * Returns (latMax, lonMax, latMin, lonMin)
+   * Returns ((latMax, lonMax), (latMin, lonMin))
    */
   def countRectangle(centerpoint: (Double, Double), radius: Int): ((Double, Double), (Double, Double)) = {   
-    val latPlusData = findLatPlus(centerpoint, radius)
-    val lonPlusData = findLonPlus(centerpoint, radius)
-    val latMinusData = findLatMinus(centerpoint, radius)
-    val lonMinusData = findLonMinus(centerpoint, radius)
+    val latPlusData = findLatMax(centerpoint, radius)
+    val lonPlusData = findLonMax(centerpoint, radius)
+    val latMinusData = findLatMin(centerpoint, radius)
+    val lonMinusData = findLonMin(centerpoint, radius)
       
     ((latPlusData._1._1 + latPlusData._2, lonPlusData._1._2 + lonPlusData._2), (latMinusData._1._1 - latMinusData._2, lonMinusData._1._2 - lonMinusData._2))
   }
   
-  def findLatPlus = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1 + totIncr, centerpoint._2))_
-  def findLatMinus = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1 - totIncr, centerpoint._2))_
-  def findLonPlus = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1, centerpoint._2 + totIncr))_
-  def findLonMinus = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1, centerpoint._2 - totIncr))_
+  def findLatMax = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1 + totIncr, centerpoint._2))_
+  def findLatMin = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1 - totIncr, centerpoint._2))_
+  def findLonMax = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1, centerpoint._2 + totIncr))_
+  def findLonMin = findPointAtDistance((centerpoint: (Double, Double), totIncr: Double) => countDistance(centerpoint._1, centerpoint._2, centerpoint._1, centerpoint._2 - totIncr))_
   
   def findPointAtDistance(countDistance: (((Double, Double), Double) => Int))(centerpoint: (Double, Double), radius: Int): ((Double, Double), Double) = {
     var diff = 10
