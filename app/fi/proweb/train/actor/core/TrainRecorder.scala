@@ -28,7 +28,7 @@ class TrainRecorder extends Actor with ActorLogging {
   def record(list: TrainList) {
     list.trains.values.foreach {
       train: Train => 
-        val trainPoint = TrainPoint(None, new BigDecimal(train.location.get._1.toString), new BigDecimal(train.location.get._2.toString), train.guid.get, new Date)
+        val trainPoint = TrainPoint(None, new BigDecimal(train.location.get._1.toString), new BigDecimal(train.location.get._2.toString), train.guid.get)//, new Date)
         val locLat = trainPoint.locLat.toString().toDouble
         val locLon = trainPoint.locLon.toString().toDouble
         if (locLat != 0d && locLon != 0d) {

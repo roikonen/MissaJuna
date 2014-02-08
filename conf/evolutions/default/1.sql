@@ -8,7 +8,7 @@ CREATE TABLE trainpoint (
     locLat decimal NOT NULL,
     locLon decimal NOT NULL,
     trainguid varchar(10) NOT NULL,
-    updated timestamp NOT NULL
+#    updated timestamp NOT NULL
 );
 
  
