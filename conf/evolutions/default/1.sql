@@ -10,6 +10,7 @@ CREATE TABLE trainpoint (
     trainguid varchar(10) NOT NULL,
     updated timestamp NOT NULL
 );
+
  
 # --- !Downs
  
