@@ -53,6 +53,22 @@ object TrainPoint {
     }
   }
   
+  def findTrainPoints(locLat: Double, locLon: Double, radius: Int): List[String] = {
+    DB.withConnection { implicit connection =>
+      val rectangle = DistanceCalculator.countRectangle((locLat, locLon), radius)
+      SQL(
+        "SELECT distinct(trainguid) FROM trainpoint WHERE " +
+          "locLat <= {locLatMax} AND " +
+          "locLat >= {locLatMin} AND " +
+          "locLon <= {locLonMax} AND " +
+          "locLon >= {locLonMin}").on(
+          'locLatMax -> new BigDecimal(rectangle._1._1.toString),
+          'locLatMin -> new BigDecimal(rectangle._2._1.toString),
+          'locLonMax -> new BigDecimal(rectangle._1._2.toString),
+          'locLonMin -> new BigDecimal(rectangle._2._2.toString)).as(get[String]("trainGuid") *)
+    }
+  }
+  
   def exists(trainPoint: TrainPoint, radius: Int): Boolean = {
     val trainPoints = find(trainPoint, radius)
     val locLat = trainPoint.locLat.toString().toDouble
