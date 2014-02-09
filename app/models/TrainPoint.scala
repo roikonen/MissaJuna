@@ -11,7 +11,7 @@ import java.text.Format
 import fi.proweb.train.helper.DistanceCalculator
 import java.math.BigDecimal
 
-case class TrainPoint(id: Option[Long], locLat: BigDecimal, locLon: BigDecimal, trainGuid: String)//, updated: Date)
+case class TrainPoint(id: Option[Long], locLat: BigDecimal, locLon: BigDecimal, trainGuid: String, updated: Date)
 
 object TrainPoint {
   val formatter: Format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -23,8 +23,8 @@ object TrainPoint {
         "id" -> tp.id,
         "locLat" -> tp.locLat.toString().toDouble,
         "locLon" -> tp.locLon.toString().toDouble,
-        "trainGuid" -> tp.trainGuid//,
-        //"updated" -> formatter.format(tp.updated)
+        "trainGuid" -> tp.trainGuid,
+        "updated" -> formatter.format(tp.updated)
         )
     }
   }
@@ -34,18 +34,16 @@ object TrainPoint {
     get[Option[Long]]("id") ~
       get[BigDecimal]("locLat") ~
       get[BigDecimal]("locLon") ~ 
-      get[String]("trainGuid") map {//~
-      //get[Date]("updated") map {
-        case id ~ locLat ~ locLon ~ trainGuid => // ~ updated => 
-          TrainPoint(id, locLat, locLon, trainGuid)//, updated)
+      get[String]("trainGuid") ~
+      get[Date]("updated") map {
+        case id ~ locLat ~ locLon ~ trainGuid ~ updated => 
+          TrainPoint(id, locLat, locLon, trainGuid, updated)
       }
   }
     
   def create(trainPoint: TrainPoint): Option[Long] = {
     DB.withConnection { implicit connection =>
-      SQL("INSERT INTO trainpoint(locLat, locLon, trainGuid) " + //, updated) " +
-          "VALUES ({locLat}, {locLon}, {trainGuid})"//, {updated})"
-          ).on('locLat -> trainPoint.locLat).on('locLon -> trainPoint.locLon).on('trainGuid -> trainPoint.trainGuid).executeInsert()//.on('updated -> trainPoint.updated).executeInsert()
+      SQL("INSERT INTO trainpoint(locLat, locLon, trainGuid, updated) VALUES ({locLat}, {locLon}, {trainGuid}, {updated})").on('locLat -> trainPoint.locLat).on('locLon -> trainPoint.locLon).on('trainGuid -> trainPoint.trainGuid).on('updated -> trainPoint.updated).executeInsert()
     }
   }
   
