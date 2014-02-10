@@ -58,6 +58,10 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
       trainData(train.guid.get) += train
       removeFromJammed(train)
     }
+    
+    if (train.location.get != (0d, 0d) && (previous != None && distanceOfTrains(previous.get, train) <= 50)) {
+      trainData(train.guid.get).last.speed = train.speed
+    }
  
     // IF train has no location data OR previous train had exactly the same location...
     if (train.location.get == (0d, 0d) || previous != None && previous.get.location.get == train.location.get) {
@@ -77,7 +81,7 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
     // IF queue's oldest and latest point have more than 1 km of distance...
     if (trainData(train.guid.get).size > 25 || (trainData(train.guid.get).size > 2 && DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) > 1000)) {
       trainData(train.guid.get).dequeue
-      //println("Size after: " + trainData(train.guid.get).size + " (" + train.guid.get + ")")
+//      println("Size after: " + trainData(train.guid.get).size + " (" + train.guid.get + ")")
     }
     
     adjustTrainLoaderScheduler(train)
@@ -93,7 +97,7 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
           val oldest = trainQ.headOption.get
           val latest = trainQ.lastOption.get
           if (latest.distance.get < oldest.distance.get) {
-            newTraintable = trainQ(1) :: newTraintable
+            newTraintable = latest :: newTraintable
           }
         }
     }
