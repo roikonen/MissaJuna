@@ -53,7 +53,7 @@ object TrainPoint {
     }
   }
   
-  def findTrainPoints(locLat: Double, locLon: Double, radius: Int): List[String] = {
+  def findTrains(locLat: Double, locLon: Double, radius: Int): List[String] = {
     DB.withConnection { implicit connection =>
       val rectangle = DistanceCalculator.countRectangle((locLat, locLon), radius)
       SQL(

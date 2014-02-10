@@ -14,7 +14,7 @@ case class Trains(list: TrainList)
 
 class TrainRecorder extends Actor with ActorLogging {
 
-  // The minimum radius in meters between two dots from same train
+  // The minimum distance in meters between two points from the same train
   val radius = 50
   
   var recording: Boolean = false

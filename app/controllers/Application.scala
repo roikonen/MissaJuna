@@ -41,7 +41,7 @@ object Application extends Controller {
   }
   
   def trainsNearBy(locLat: Double, locLon: Double) = Action.apply {
-    Ok(TrainPoint.findTrainPoints(locLat, locLon, 500).toString)
+    Ok(TrainPoint.findTrains(locLat, locLon, 500).toString)
   }
    
 }
