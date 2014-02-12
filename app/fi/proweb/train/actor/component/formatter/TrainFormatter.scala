@@ -10,7 +10,7 @@ import models.TrainPoint
 import java.util.Date
 
 class TrainFormatter extends DataFormatter[Train] {
-
+  
   override def format(loadData: String): Train = {
     val rss = XML.loadString(loadData)
     val channel = rss \ "channel"
