@@ -72,16 +72,16 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
       }
     }
     
-    if (isJammed(train)) {
-      println("Size:       " + trainData(train.guid.get).size + " (" + train.guid.get + ") (" + DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) + ") (Jammed)")
-    } else {
-      println("Size:       " + trainData(train.guid.get).size + " (" + train.guid.get + ") (" + DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) + ")")
-    }
+//    if (isJammed(train)) {
+//      println("Size:       " + trainData(train.guid.get).size + " (" + train.guid.get + ") (" + DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) + ") (Jammed)")
+//    } else {
+//      println("Size:       " + trainData(train.guid.get).size + " (" + train.guid.get + ") (" + DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) + ")")
+//    }
     
     // IF queue's oldest and latest point have more than 1 km of distance...
     if (trainData(train.guid.get).size > 25 || (trainData(train.guid.get).size > 2 && DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) > 1000)) {
       trainData(train.guid.get).dequeue
-      println("Size after: " + trainData(train.guid.get).size + " (" + train.guid.get + ")")
+//      println("Size after: " + trainData(train.guid.get).size + " (" + train.guid.get + ")")
     }
     
     adjustTrainLoaderScheduler(train)

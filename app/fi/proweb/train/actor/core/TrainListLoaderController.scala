@@ -53,6 +53,7 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
       addToMsgQ(Register(locLat, locLon), sender)
     } else {
       val trainsToObserve = TrainPoint.findTrains(locLat, locLon, Application.OBSERVATION_RADIUS).filter(allTrains.contains(_))
+      println(trainsToObserve)
       trainLoaderController.tell(SubscribeTrains(trainsToObserve.toSet), sender)
     }
   }

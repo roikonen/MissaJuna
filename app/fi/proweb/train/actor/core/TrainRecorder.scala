@@ -34,10 +34,10 @@ class TrainRecorder extends Actor with ActorLogging {
         if (locLat != 0d && locLon != 0d) {
           val trainPoints = TrainPoint.find(trainPoint, radius)
 	      if (trainPoints.size == 0) {
-	        println("Saving location    : " + trainPoint)
+//	        println("Saving location    : " + trainPoint)
 	        TrainPoint.create(trainPoint)
 	      } else {
-	        println("Not saving location: " + trainPoint)
+//	        println("Not saving location: " + trainPoint)
 	        trainPoints.foreach(TrainPoint.refreshUpdateDate(_))
 	        log.debug("Nearby train point for the same train (" + trainPoint.trainGuid + ") already exists")
 	      }
