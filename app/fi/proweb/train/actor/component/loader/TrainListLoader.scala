@@ -8,4 +8,9 @@ import fi.proweb.train.actor.component.formatter.TrainListFormatter
 import fi.proweb.train.model.app.TrainList
 
 class TrainListLoader extends DataLoader[TrainList](Props[TrainListDataValidator], Props[TrainListFormatter], 
-    "http://188.117.35.14/TrainRSS/TrainService.svc/AllTrains")
+    "http://188.117.35.14/TrainRSS/TrainService.svc/AllTrains") {
+  
+  def process(trainList: TrainList) {
+    // Do nothing for now
+  }
+}

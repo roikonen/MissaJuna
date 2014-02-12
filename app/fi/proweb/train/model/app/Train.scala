@@ -4,6 +4,7 @@ import fi.proweb.train.model.AppData
 import fi.proweb.train.data.RailNetwork
 import util.Properties
 import scala.collection.mutable.MutableList
+import scala.collection.mutable.Queue
 
 class Train extends AppData[Train] {
 
@@ -30,6 +31,10 @@ class Train extends AppData[Train] {
   
   var stations: MutableList[TrainStation] = MutableList[TrainStation]()
   
+  var history: Queue[Train] = Queue[Train]()
+  
+  var jammed = false
+    
   def makeCopy: Train = {
     val train = new Train
     train.guid = guid
@@ -42,6 +47,9 @@ class Train extends AppData[Train] {
     
     train.stations = MutableList[TrainStation]()
     stations.foreach(train.stations += _.makeCopy)
+    
+    train.history = history
+    train.jammed = jammed
     
     train
   }

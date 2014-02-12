@@ -92,12 +92,20 @@ object TrainPoint {
     }
   }
   
+  def find(id: Long): Option[TrainPoint] = {
+    DB.withConnection { implicit connection =>
+      val results: List[TrainPoint] = SQL("SELECT * FROM trainpoint WHERE id={id}").on('id -> id).as(trainPoint *)
+      results match {
+        case trainPoint :: tail => Some(trainPoint)
+        case List() => None
+      }
+    }
+  }
+  
   def refreshUpdateDate(trainPoint: TrainPoint) {
     DB.withConnection { implicit connection =>
       SQL("UPDATE trainpoint SET updated={updated} WHERE trainpoint.id={id}").on('updated -> new Date()).on('id -> trainPoint.id.get).executeUpdate
     }
   }
-  
-  def exists(trainPoint: TrainPoint, radius: Int) = find(trainPoint, radius).size > 0
 
 }

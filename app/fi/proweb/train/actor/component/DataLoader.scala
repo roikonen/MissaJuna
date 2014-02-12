@@ -23,7 +23,7 @@ case class Schedule(interval: FiniteDuration)
 case object Freeze
 case object Melt
 
-class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps: Props, val url: String) extends Actor with ActorLogging {
+abstract class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps: Props, val url: String) extends Actor with ActorLogging {
 
   import context.dispatcher
   
@@ -56,10 +56,12 @@ class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps:
     case Stop => scheduler ! Stop
     case Start(interval: FiniteDuration) => start(interval) 
     case Schedule(interval: FiniteDuration) => schedule(interval)
-    case AppDataMsg(appdata: T) => deliverToSubscribers(appdata)
+    case AppDataMsg(appdata: T) => processAndDeliverToSubscribers(appdata)
     case Freeze => freezed = true
     case Melt => freezed = false
   }
+  
+  def process(appData: T)
   
   def start(interval: FiniteDuration) {
     scheduler ! Start(interval)
@@ -89,8 +91,13 @@ class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps:
     LoadData(loadData)
   }
   
+  def processAndDeliverToSubscribers(appData: T) {
+    process(appData)
+    deliverToSubscribers(appData: T)
+  }
+  
   def deliverToSubscribers(appData: T) {
-        
+    
     cache(appData)
     
     log.debug("Delivering: " + appData + " to " + subscribers.size + " subscribers")
