@@ -15,6 +15,7 @@ import fi.proweb.train.model.app.TrainList
 import fi.proweb.train.actor.component.Subscribe
 import fi.proweb.train.actor.component.Start
 import scala.collection.mutable.Queue
+import models.TrainPoint
 
 trait TrainListLoaderControllerMsg
 case class Register(locLat: Double, locLon: Double) extends TrainListLoaderControllerMsg
@@ -38,7 +39,7 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
   val msgQ = Queue[(TrainListLoaderControllerMsg, ActorRef)]()
         
   def receive = {
-    case msg: Register => register(msg, sender)
+    case Register(locLat: Double, locLon: Double) => register(locLat, locLon, sender)
     case Unregister => unRegister(Unregister, sender)
     case AppDataMsg(appdata) => appdata match {
       case train: Train => processMsgQ
@@ -46,12 +47,13 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
     }
   }
   
-  def register(msg: TrainListLoaderControllerMsg, sender: ActorRef) {
+  def register(locLat: Double, locLon: Double, sender: ActorRef) {
     if (allTrains.size == 0) {
-      addToMsgQ(msg, sender)
+      addToMsgQ(Register(locLat, locLon), sender)
     } else {
-      val trainsToObserve = allTrains
-      trainLoaderController.tell(SubscribeTrains(trainsToObserve), sender)
+      val trainsToObserve = TrainPoint.findTrains(locLat, locLon, 5000).filter(allTrains.contains(_))
+      println(trainsToObserve)
+      trainLoaderController.tell(SubscribeTrains(trainsToObserve.toSet), sender)
     }
   }
   
