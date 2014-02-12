@@ -23,6 +23,9 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
   // How long to wait for other data before delivering forward
   val waitTime = 1 second
   
+  val TRY_BEFORE_JAMMED = 10
+  val GATHER_TRAIN_HISTORY_IN_KM = 1
+  
   private var traintable = List[Train]()
   
   private var trainData = Map[String, Queue[Train]]()
@@ -79,7 +82,7 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
 //    }
     
     // IF queue's oldest and latest point have more than 1 km of distance...
-    if (trainData(train.guid.get).size > 25 || (trainData(train.guid.get).size > 2 && DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) > 1000)) {
+    if (trainData(train.guid.get).size > 25 || (trainData(train.guid.get).size > 2 && DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) > GATHER_TRAIN_HISTORY_IN_KM * 1000)) {
       trainData(train.guid.get).dequeue
 //      println("Size after: " + trainData(train.guid.get).size + " (" + train.guid.get + ")")
     }
@@ -160,7 +163,7 @@ class TrainStore(locLat: Double, locLon: Double) extends AppDataStore[Train](Tra
   }
     
   def isJammed(train: Train): Boolean = {
-    jammedTrains.contains(train.guid.get) && jammedTrains(train.guid.get) > 10
+    jammedTrains.contains(train.guid.get) && jammedTrains(train.guid.get) > TRY_BEFORE_JAMMED
   }
   
   def distanceOfTrains(train1: Train, train2: Train): Int = {
