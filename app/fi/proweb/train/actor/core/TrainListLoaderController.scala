@@ -27,6 +27,8 @@ object TrainListLoaderController {
 
 class TrainListLoaderController(val trainLoaderController: ActorRef) extends Actor with ActorLogging {
   
+  val OBSERVATION_RADIUS = 5000
+  
   var allTrains = Set[String]()
   
   val loader = context.actorOf(Props[TrainListLoader], "TrainListLoader")
@@ -51,7 +53,7 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
     if (allTrains.size == 0) {
       addToMsgQ(Register(locLat, locLon), sender)
     } else {
-      val trainsToObserve = TrainPoint.findTrains(locLat, locLon, 5000).filter(allTrains.contains(_))
+      val trainsToObserve = TrainPoint.findTrains(locLat, locLon, OBSERVATION_RADIUS).filter(allTrains.contains(_))
       trainLoaderController.tell(SubscribeTrains(trainsToObserve.toSet), sender)
     }
   }
