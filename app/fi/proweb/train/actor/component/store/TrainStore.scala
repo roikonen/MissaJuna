@@ -81,7 +81,13 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   
   def deliverForward = {
     log.debug("Delivering traintable to observer...")
-    context.parent ! Traintable(createTraintable)
+    // Chopped temporarily in debug purposes...
+    val con = context
+    val par = con.parent
+    val tt1 = createTraintable
+    val tt = Traintable(tt1)
+    par ! tt
+    //context.parent ! Traintable(createTraintable)
   }
   
   def schedule(train: Train, interval: FiniteDuration) {
