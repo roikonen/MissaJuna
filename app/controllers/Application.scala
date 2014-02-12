@@ -18,6 +18,8 @@ import models.TrainPoint
 
 object Application extends Controller {
 
+  val OBSERVATION_RADIUS = 1000
+  
   implicit val timeout = Timeout(5 seconds)
 
   def index = Action.async {
@@ -48,7 +50,7 @@ object Application extends Controller {
   }
   
   def trainsNearBy(locLat: Double, locLon: Double) = Action.apply {
-    Ok(TrainPoint.findTrains(locLat, locLon, 500).toString)
+    Ok(TrainPoint.findTrains(locLat, locLon, OBSERVATION_RADIUS).toString)
   }
    
 }

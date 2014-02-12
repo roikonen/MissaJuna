@@ -16,17 +16,18 @@ import fi.proweb.train.actor.component.Subscribe
 import fi.proweb.train.actor.component.Start
 import scala.collection.mutable.Queue
 import models.TrainPoint
+import controllers.Application
 
 trait TrainListLoaderControllerMsg
 case class Register(locLat: Double, locLon: Double) extends TrainListLoaderControllerMsg
 case object Unregister extends TrainListLoaderControllerMsg
 
-object TrainListLoaderController {
+object TrainListLoaderController { 
   def props(trainLoaderController: ActorRef): Props = Props(new TrainListLoaderController(trainLoaderController))
 }
 
 class TrainListLoaderController(val trainLoaderController: ActorRef) extends Actor with ActorLogging {
-  
+
   var allTrains = Set[String]()
   
   val loader = context.actorOf(Props[TrainListLoader], "TrainListLoader")
@@ -51,7 +52,7 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
     if (allTrains.size == 0) {
       addToMsgQ(Register(locLat, locLon), sender)
     } else {
-      val trainsToObserve = TrainPoint.findTrains(locLat, locLon, 5000).filter(allTrains.contains(_))
+      val trainsToObserve = TrainPoint.findTrains(locLat, locLon, Application.OBSERVATION_RADIUS).filter(allTrains.contains(_))
       trainLoaderController.tell(SubscribeTrains(trainsToObserve.toSet), sender)
     }
   }
@@ -87,10 +88,11 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
     
     processMsgQ
   }
-  
+    
   def newTrains(oldTrainSet: Set[String], newTrainSet: Set[String]): Set[String] = newTrainSet diff oldTrainSet
   
   def removedTrains(oldTrainSet: Set[String], newTrainSet: Set[String]): Set[String] = oldTrainSet diff newTrainSet
   
   def remainingTrains(oldTrainSet: Set[String], newTrainSet: Set[String]): Set[String] = oldTrainSet intersect newTrainSet
+
 }

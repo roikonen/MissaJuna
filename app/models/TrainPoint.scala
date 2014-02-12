@@ -69,21 +69,12 @@ object TrainPoint {
     }
   }
   
-  def exists(trainPoint: TrainPoint, radius: Int): Boolean = {
-    val trainPoints = find(trainPoint, radius)
-    val locLat = trainPoint.locLat.toString().toDouble
-    val locLon = trainPoint.locLon.toString().toDouble
-    trainPoints.exists( tp => {
-      DistanceCalculator.countDistance(locLat, locLon, tp.locLat.toString().toDouble, tp.locLon.toString().toDouble) <= radius
-    })
-  }
-
   def find(refTrainPoint: TrainPoint, radius: Int): List[TrainPoint] = {
     DB.withConnection { implicit connection =>
       val locLat = refTrainPoint.locLat.toString().toDouble
       val locLon = refTrainPoint.locLon.toString().toDouble
       val rectangle = DistanceCalculator.countRectangle((locLat, locLon), radius)
-      SQL(
+      val trainPoints = SQL(
         "SELECT * FROM trainpoint WHERE " +
           "trainguid = {trainguid} AND " +
           "locLat <= {locLatMax} AND " +
@@ -95,7 +86,18 @@ object TrainPoint {
           'locLatMin -> new BigDecimal(rectangle._2._1.toString),
           'locLonMax -> new BigDecimal(rectangle._1._2.toString),
           'locLonMin -> new BigDecimal(rectangle._2._2.toString)).as(trainPoint *)
+      trainPoints.filter( tp => {
+        DistanceCalculator.countDistance(locLat, locLon, tp.locLat.toString().toDouble, tp.locLon.toString().toDouble) <= radius
+      })
     }
   }
+  
+  def refreshUpdateDate(trainPoint: TrainPoint) {
+    DB.withConnection { implicit connection =>
+      SQL("UPDATE trainpoint SET updated={updated} WHERE trainpoint.id={id}").on('updated -> new Date()).on('id -> trainPoint.id).executeUpdate
+    }
+  }
+  
+  def exists(trainPoint: TrainPoint, radius: Int) = find(trainPoint, radius).size > 0
 
 }
