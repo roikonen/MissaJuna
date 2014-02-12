@@ -5,6 +5,17 @@ import scala.collection.mutable.Map
 
 class TrainList extends AppData[TrainList] {
 
-  val trains = Map[String, Train]()
+  var trains = Map[String, Train]()
+  
+  def makeCopy: TrainList = {
+    val trainlist = new TrainList
+    
+    trainlist.trains = Map[String, Train]()
+    trains.foreach { t => 
+      trainlist.trains += ((t._1, t._2.makeCopy))
+    }
+    
+    trainlist
+  }
   
 }

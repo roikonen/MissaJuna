@@ -94,8 +94,9 @@ class DataLoader[T <: AppData[T]](val validatorProps: Props, val formatterProps:
     cache(appData)
     
     log.debug("Delivering: " + appData + " to " + subscribers.size + " subscribers")
-    subscribers.foreach(_.tell(AppDataMsg(appData), context.parent))
-    deliverAlsoTo.foreach(_.tell(AppDataMsg(appData), context.parent))
+
+    subscribers.foreach(_.tell(AppDataMsg(appData.makeCopy), context.parent))
+    deliverAlsoTo.foreach(_.tell(AppDataMsg(appData.makeCopy), context.parent))
     deliverAlsoTo = None
   }  
   

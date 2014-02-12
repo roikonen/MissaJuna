@@ -30,6 +30,22 @@ class Train extends AppData[Train] {
   
   var stations: MutableList[TrainStation] = MutableList[TrainStation]()
   
+  def makeCopy: Train = {
+    val train = new Train
+    train.guid = guid
+    train.title = title
+    train.lastBuildDate = lastBuildDate
+    train.distance = distance
+    train.location = location
+    train.speed = speed
+    train.heading = heading
+    
+    train.stations = MutableList[TrainStation]()
+    stations.foreach(train.stations += _.makeCopy)
+    
+    train
+  }
+  
   def distanceInKm: Option[Double] = {
     distance.map((dist: Int) => (dist.toDouble / 100d).round.toDouble / 10d)
   }
