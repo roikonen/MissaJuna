@@ -25,11 +25,18 @@ object Application extends Controller {
     val locLon = 23.761861
     val future = (Global.trainObserverController ? CreateObserver(locLat, locLon)).mapTo[ObserverCreated]
     future.map(_ match {
-      case ObserverCreated(id: Long) => Ok(views.html.index(id))
+      case ObserverCreated(id: Long) => Ok(views.html.index(id, locLat, locLon))
     })
   }
   
-  def traintable(observerId: Long) = Action.async {
+  def observe(locLat: Double, locLon: Double) = Action.async {
+    val future = (Global.trainObserverController ? CreateObserver(locLat, locLon)).mapTo[ObserverCreated]
+    future.map(_ match {
+      case ObserverCreated(id: Long) => Ok(views.html.index(id, locLat, locLon))
+    })
+  }
+  
+  def traintable(observerId: Long, locLat: Double, locLon: Double) = Action.async {
     val future = (Global.trainObserverController ? GetObserversTraintable(observerId)).mapTo[Traintable]
     future.map(_ match {
       case Traintable(traintable: List[Train]) => Ok(views.html.traintable(traintable mkString(Properties.lineSeparator + Properties.lineSeparator)))
