@@ -94,7 +94,7 @@ object TrainPoint {
   
   def refreshUpdateDate(trainPoint: TrainPoint) {
     DB.withConnection { implicit connection =>
-      SQL("UPDATE trainpoint SET updated={updated} WHERE trainpoint.id={id}").on('updated -> new Date()).on('id -> trainPoint.id).executeUpdate
+      SQL("UPDATE trainpoint SET updated={updated} WHERE trainpoint.id={id}").on('updated -> new Date()).on('id -> trainPoint.id.get).executeUpdate
     }
   }
   
