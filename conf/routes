@@ -8,7 +8,7 @@ GET     /observe/:locLat/:locLon                  controllers.Application.observ
 GET     /traintable/:observerId/:locLat/:locLon   controllers.Application.traintable(observerId: Long, locLat: Double, locLon: Double)
 
 GET     /trainpoint/countAll                      controllers.Application.countTrainPoints
-GET     /trainpoint/nearby/:locLat/:locLon        controllers.Application.trainsNearBy(locLat: Double, locLon: Double)
+GET     /trains/:locLat/:locLon                   controllers.Application.trainsNearBy(locLat: Double, locLon: Double)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                             controllers.Assets.at(path="/public", file)
