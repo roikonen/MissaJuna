@@ -82,10 +82,50 @@ class Train extends AppData[Train] {
   
   override def toString = 
     "------------------------------" + Properties.lineSeparator +
-    "Train:        " + title.getOrElse("?") + " (" + guid.getOrElse("?") + ")" + Properties.lineSeparator +
-    "Distance:     " + distanceInKm.getOrElse("?") + " km" + Properties.lineSeparator +
-    "Speed:        " + speed.getOrElse("?") + " km/h" + Properties.lineSeparator +
-    "Heading:      " + heading.getOrElse("?") + Properties.lineSeparator +
-    "Next station: " + stationTitle(nextStationCode) + Properties.lineSeparator +
+    "Train:        " + getTitle + " (" + getGuid + ")" + Properties.lineSeparator +
+    "Distance:     " + getDistanceInKm + " km" + Properties.lineSeparator +
+    "Speed:        " + getSpeed + " km/h" + Properties.lineSeparator +
+    "Heading:      " + getHeading + Properties.lineSeparator +
+    "Next station: " + getNextStation + Properties.lineSeparator +
     "------------------------------" + Properties.lineSeparator
+    
+  private def getTitle: String = {
+    title.getOrElse("?")
+  }
+    
+  private def getGuid: String = {
+    guid.getOrElse("?")
+  }
+  
+  private def getDistanceInKm: String = {
+    if (jammed) {
+      "JAMMED"
+    } else {
+      distanceInKm.getOrElse("?").toString
+    }
+  }
+  
+  private def getSpeed: String = {
+    if (jammed) {
+      "JAMMED"
+    } else {
+      speed.getOrElse("?").toString
+    }
+  }
+  
+  private def getHeading: String = {
+    if (jammed) {
+      "JAMMED"
+    } else {
+      heading.getOrElse("?")
+    }
+  }
+  
+  private def getNextStation: String = {
+    if (jammed) {
+      "JAMMED"
+    } else {
+      stationTitle(nextStationCode)
+    }
+  }
 }
