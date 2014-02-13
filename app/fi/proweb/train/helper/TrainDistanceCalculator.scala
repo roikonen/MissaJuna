@@ -5,7 +5,7 @@ import fi.proweb.train.model.app.Train
 object TrainDistanceCalculator {
 
   val SPEED_KM_H = 150
-  val SUBSTRACT_DISTANCE_IN_M = 500
+  val SUBSTRACT_DISTANCE_IN_M = 600
   
   def countDistance(train: Train, location: (Double, Double)): Int = {
     val substraction = (SUBSTRACT_DISTANCE_IN_M / SPEED_KM_H) * train.speed.get
