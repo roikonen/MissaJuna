@@ -80,6 +80,12 @@ class Train extends AppData[Train] {
     }
   }
   
+  def hasLocation: Boolean = {
+    val locZero = (location == (0d, 0d))
+    val locNone = (location == None)
+    !(locZero || locNone)
+  }
+  
   override def toString = 
     "------------------------------" + Properties.lineSeparator +
     "Train:        " + getTitle + " (" + getGuid + ")" + Properties.lineSeparator +

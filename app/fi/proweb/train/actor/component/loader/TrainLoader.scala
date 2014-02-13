@@ -18,40 +18,26 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   val TRY_BEFORE_JAMMED = 10
   val GATHER_TRAIN_HISTORY_IN_KM = 5
   val HISTORY_DATA_MAX_SIZE = 50
+  val MIN_DISTANCE_IN_M_BETWEEN_SUCCESSIVE_SAMPLES = 50
+  val MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES = 50
   
   private var historyData = Queue[Train]()
   private var jammed = 0
   
   def process(train: Train) {
-    
-    val oldest = oldestTrain
-    val latest = latestTrain
-    
-    val oldestPoint = ripLocation(oldest)
-    val latestPoint = ripLocation(latest)
-    
-    // IF train has location data AND (
-    //  IF 
-    //   (train's queue IS empty) OR
-    //   (new train location IS 50 meters further than the previous train location)
-    // )
-    if (train.location.get != (0d, 0d) && (latest == None || distanceOfTrains(latest.get, train) > 50)) {
-      historyData += train
-      if (isJammed) removeFromJammed
-    }
-    
-    if (train.location.get != (0d, 0d) && (latest != None && distanceOfTrains(latest.get, train) <= 50)) {
-      historyData.last.speed = train.speed
-      historyData.last.heading = train.heading
-    }
- 
-    // IF train has no location data OR previous train had exactly the same location...
-    if (train.location.get == (0d, 0d) || latest != None && latest.get.location.get == train.location.get) {
+
+    if (train.hasLocation) {
+      if (hasSameLocationAsBefore(train)) {
+        jammedOnce
+      } else if (hasSuspiciousLocationFromBefore(train)) {
+        jammedOnce
+      } else if (hasMovedEnoughToGetTracked(train)) {
+        addTrainToHistory(train)
+      } else {
+        updateLatestTrainDetailsWith(train)
+      }
+    } else { // Train has no location
       jammedOnce
-//      if (historyData.size > 1 && isJammed) {
-//        historyData.clear
-//        historyData += train
-//      }
     }
 
 //    if (historyData.size > 1) {
@@ -67,6 +53,39 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     train.history = historyData
     train.jammed = isJammed
     
+  }
+    
+  private def hasSuspiciousLocationFromBefore(train: Train): Boolean = {
+    if (hasHistory) distanceOfTrains(latestTrain.get, train) > MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES * 1000
+    else false
+  }
+  
+  private def hasMovedEnoughToGetTracked(train: Train): Boolean = {
+    if (hasHistory) distanceOfTrains(latestTrain.get, train) > MIN_DISTANCE_IN_M_BETWEEN_SUCCESSIVE_SAMPLES
+    else true
+  }
+  
+  private def hasSameLocationAsBefore(train: Train): Boolean = {
+    if (hasHistory) latestTrain.get.location.get == train.location.get
+    else false
+  }
+  
+  private def hasHistory: Boolean = {
+    historyData.size > 0
+  }
+  
+  private def addTrainToHistory(train: Train) {
+    if (isJammed) removeFromJammed
+    historyData += train
+  }
+
+  private def updateLatestTrainDetailsWith(train: Train) {
+    if (isJammed) removeFromJammed
+    if (hasHistory) {
+      val latest = latestTrain
+      latest.get.speed = train.speed
+      latest.get.heading = train.heading
+    }
   }
   
   private def optimizeHistoryData {
@@ -100,11 +119,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   }
 
   private def removeFromJammed {
-    if (historyData.size > 0) {
-      val latest = latestTrain
-      historyData.clear
-      historyData += latest.get
-    }
+    historyData.clear
     jammed = 0
   }
     
