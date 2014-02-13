@@ -13,6 +13,7 @@ import akka.pattern.{ ask, pipe }
 import akka.util.Timeout
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import fi.proweb.train.model.app.TrainStation
+import akka.actor.Cancellable
 
 case class CreateObserver(locLat: Double, locLon: Double)
 case class ObserverCreated(id: Long)
@@ -20,6 +21,7 @@ case class GetObserversTraintable(id: Long)
 case class Traintable(traintable: List[Train])
 case class Observer(observer: ActorRef)
 case object CleanObservers
+case class ReRegister(observerId: Long, loc: (Double, Double))
 
 object TrainObserverController {
   def props(trainListController: ActorRef, trainLoaderController: ActorRef): Props = Props(new TrainObserverController(trainListController, trainLoaderController))
@@ -30,17 +32,20 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
   implicit val timeout = Timeout(5 seconds)
   
   private val inactiveObserverTimeToLive = 30 seconds
-  
-  private var observerIdCounter = 0L
-  private var observers = Map[Long, (ActorRef, Deadline)]()
-  
+
   private val cleanInterval = inactiveObserverTimeToLive
   private val cleanScheduler = context.system.scheduler.schedule(cleanInterval, cleanInterval, context.self, CleanObservers)(context.system.dispatcher, ActorRef.noSender)
+  
+  private val reRegisterInterval = 5 minutes
+  
+  private var observerIdCounter = 0L
+  private var observers = Map[Long, (ActorRef, Deadline, Cancellable)]()
   
   def receive = {
     case CreateObserver(locLat: Double, locLon: Double) => createObserver(locLat, locLon, sender)
     case GetObserversTraintable(id: Long) => getTraintable(id, sender)
     case CleanObservers => cleanObservers
+    case ReRegister(observerId: Long, loc: (Double, Double)) => reRegister(observers(observerId)._1, loc._1, loc._2)
   }
   
   def createObserver(locLat: Double, locLon: Double, sender: ActorRef) {
@@ -50,8 +55,16 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
     val observer = Akka.system().actorOf(TrainObserver.props(trainController, locLat, locLon), "TrainObserver_" + observerId)
     trainListController.tell(Register(locLat, locLon), observer)
     
-    observers += (observerId -> (observer, inactiveObserverTimeToLive fromNow))
+    val reRegisterer = context.system.scheduler.schedule(reRegisterInterval, reRegisterInterval, context.self, ReRegister(observerId, (locLat, locLon)))(context.system.dispatcher, ActorRef.noSender)
+    
+    observers += (observerId -> (observer, inactiveObserverTimeToLive fromNow, reRegisterer))
     sender ! ObserverCreated(observerId)
+  }
+  
+  def reRegister(observer: ActorRef, locLat: Double, locLon: Double) {
+    log.debug("Re-registering observer: " + observer)
+    trainListController.tell(Unregister, observer)
+    trainListController.tell(Register(locLat, locLon), observer)
   }
   
   def getTraintable(id: Long, requester: ActorRef) {
@@ -60,7 +73,8 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
       requester ! Traintable(List[Train]())
     } else {
       val observer = observerTuple.get._1
-      observers += (id -> (observer, inactiveObserverTimeToLive fromNow))
+      val reRegisterer = observerTuple.get._3
+      observers += (id -> (observer, inactiveObserverTimeToLive fromNow, reRegisterer))
       val future = (observer ? GetTraintable).mapTo[Traintable]
       future pipeTo requester
     }
@@ -68,9 +82,10 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
   
   def cleanObservers {
     observers = observers.filterNot {
-      case (id: Long, (observer: ActorRef, deadline: Deadline)) => {
+      case (id: Long, (observer: ActorRef, deadline: Deadline, reRegisterer: Cancellable)) => {
         if (deadline.isOverdue) {
           log.debug("Timeout for observer: " + observer)
+          reRegisterer.cancel
           trainListController.tell(Unregister, observer)
           observer ! PoisonPill
         }
