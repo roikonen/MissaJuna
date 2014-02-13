@@ -48,14 +48,9 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
       train: Train => 
         if (train.history.size > 1) {
           val latest = train.history.lastOption.get 
-          //val oldest = train.history.headOption.get
           val distFromLatest = TrainDecorator.countDistance(latest, (locLat, locLon))
           val oldest = findOldest(distFromLatest, latest, train.history.toList).get
           val distFromOldest = TrainDecorator.countDistance(oldest, (locLat, locLon))
-          
-          // TODO: POISTA
-          if (latest.guid.get == "H9663") println(latest.guid.get + "'s history length in meters: " + TrainDecorator.countDistance(latest, oldest))
-          
           if (distFromLatest < distFromOldest) {
             newTraintable = trainData(latest.guid.get) :: newTraintable
           }
