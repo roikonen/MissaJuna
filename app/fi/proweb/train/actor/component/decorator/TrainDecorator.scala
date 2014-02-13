@@ -18,6 +18,10 @@ object TrainDecorator {
     if (distance < 0) 0
     else distance
   }
+  
+  def countDistance(train1: Train, train2: Train): Int = {
+    countDistance(train1, (train2.location.get._1, train2.location.get._2))
+  }
 }
 
 class TrainDecorator(val locLat: Double, val locLon: Double) extends AppDataDecorator[Train] {

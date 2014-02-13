@@ -47,15 +47,36 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
     trainData.values.foreach {
       train: Train => 
         if (train.history.size > 1) {
-          val oldest = train.history.headOption.get
-          val latest = train.history.lastOption.get  
-          if (TrainDecorator.countDistance(latest, (locLat, locLon)) < TrainDecorator.countDistance(oldest, (locLat, locLon))) {
+          val latest = train.history.lastOption.get 
+          //val oldest = train.history.headOption.get
+          val distFromLatest = TrainDecorator.countDistance(latest, (locLat, locLon))
+          val oldest = findOldest(distFromLatest, latest, train.history.toList).get
+          val distFromOldest = TrainDecorator.countDistance(oldest, (locLat, locLon))
+          
+          // TODO: POISTA
+          if (latest.guid.get == "H9663") println(latest.guid.get + "'s history length in meters: " + TrainDecorator.countDistance(latest, oldest))
+          
+          if (distFromLatest < distFromOldest) {
             newTraintable = trainData(latest.guid.get) :: newTraintable
           }
         }
     }
     traintable = newTraintable sortBy(_.distance)
     traintable
+  }
+  
+  // When train is closer to the observer than train has history in meters, 
+  // only take as much history in count as there is between observer and the train but min 1 km.
+  def findOldest(max: Int, latest: Train, trainHistory: List[Train]): Option[Train] = trainHistory match {
+    case head :: tail => {
+      val dist = TrainDecorator.countDistance(latest, head)
+      if (dist < max || dist < 1000) {
+        Some(head)
+      } else {
+        findOldest(max, latest, tail)
+      }
+    }
+    case Nil => None
   }
   
   def restartTraintablePushScheduler {
