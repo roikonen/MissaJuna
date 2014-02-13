@@ -37,7 +37,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     // )
     if (train.location.get != (0d, 0d) && (latest == None || distanceOfTrains(latest.get, train) > 50)) {
       historyData += train
-      removeFromJammed
+      if (isJammed) removeFromJammed
     }
     
     if (train.location.get != (0d, 0d) && (latest != None && distanceOfTrains(latest.get, train) <= 50)) {
@@ -53,21 +53,26 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
 //        historyData += train
 //      }
     }
-    
-//    if (isJammed) {
-//      println("Size:       " + historyData.size + " (" + train.guid.get + ") (" + DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) + ") (Jammed)")
-//    } else {
-//      println("Size:       " + historyData.size + " (" + train.guid.get + ") (" + DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) + ")")
+
+//    if (historyData.size > 1) {
+//      println("Size:       " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
 //    }
     
-    if (historyData.size > HISTORY_DATA_MAX_SIZE || (historyData.size > 2 && TrainDistanceCalculator.countDistance(oldest.get, latest.get) > GATHER_TRAIN_HISTORY_IN_KM * 1000)) {
-      historyData.dequeue
-//      println("Size after: " + historyData.size + " (" + train.guid.get + ")")
-    }
+    optimizeHistoryData
+        
+//    if (historyData.size > 1) {
+//      println("Size after: " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
+//    }
     
     train.history = historyData
     train.jammed = isJammed
     
+  }
+  
+  private def optimizeHistoryData {
+    while (historyData.size > HISTORY_DATA_MAX_SIZE || (historyData.size > 2 && TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) > GATHER_TRAIN_HISTORY_IN_KM * 1000)) {
+      historyData.dequeue
+    }
   }
   
   private def latestTrain: Option[Train] = {
