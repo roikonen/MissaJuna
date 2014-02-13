@@ -11,7 +11,7 @@ import scala.collection.mutable.Map
 import scala.concurrent.duration._
 import akka.actor.Cancellable
 import fi.proweb.train.actor.core.ScheduleTrain
-import fi.proweb.train.helper.DistanceCalculator
+import fi.proweb.train.helper.TrainDistanceCalculator
 
 object TrainStore {
   def props(locLat: Double, locLon: Double): Props = Props(new TrainStore(locLat, locLon))
@@ -48,9 +48,9 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
       train: Train => 
         if (train.history.size > 1) {
           val latest = train.history.lastOption.get 
-          val distFromLatest = TrainDecorator.countDistance(latest, (locLat, locLon))
+          val distFromLatest = TrainDistanceCalculator.countDistance(latest, (locLat, locLon))
           val oldest = findOldest(distFromLatest, latest, train.history.toList).get
-          val distFromOldest = TrainDecorator.countDistance(oldest, (locLat, locLon))
+          val distFromOldest = TrainDistanceCalculator.countDistance(oldest, (locLat, locLon))
           if (distFromLatest < distFromOldest) {
             newTraintable = trainData(latest.guid.get) :: newTraintable
           }
@@ -64,7 +64,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   // only take as much history in count as there is between observer and the train but min 1 km.
   def findOldest(max: Int, latest: Train, trainHistory: List[Train]): Option[Train] = trainHistory match {
     case head :: tail => {
-      val dist = TrainDecorator.countDistance(latest, head)
+      val dist = TrainDistanceCalculator.countDistance(latest, head)
       if (dist < max || dist < 1000) {
         Some(head)
       } else {
@@ -97,13 +97,8 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   
   def deliverForward = {
     log.debug("Delivering traintable to observer...")
-    // Chopped temporarily in debug purposes...
-    val con = context
-    val par = con.parent
-    val tt1 = createTraintable
-    val tt = Traintable(tt1)
-    par ! tt
-    //context.parent ! Traintable(createTraintable)
+    if (context == null) println("null context for: " + self)
+    else context.parent ! Traintable(createTraintable)
   }
   
   def schedule(train: Train, interval: FiniteDuration) {

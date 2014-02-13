@@ -7,7 +7,7 @@ import fi.proweb.train.actor.component.validator.TrainDataValidator
 import fi.proweb.train.actor.component.formatter.TrainFormatter
 import fi.proweb.train.model.app.Train
 import scala.collection.mutable.Queue
-import fi.proweb.train.helper.DistanceCalculator
+import fi.proweb.train.helper.TrainDistanceCalculator
 
 object TrainLoader {
   def props(trainGuid: String): Props = Props(new TrainLoader("http://188.117.35.14/TrainRSS/TrainService.svc/trainInfo?train=" + trainGuid))
@@ -24,8 +24,8 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   
   def process(train: Train) {
     
-    val oldest = oldestTrain(train)
-    val latest = latestTrain(train)
+    val oldest = oldestTrain
+    val latest = latestTrain
     
     val oldestPoint = ripLocation(oldest)
     val latestPoint = ripLocation(latest)
@@ -42,15 +42,16 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     
     if (train.location.get != (0d, 0d) && (latest != None && distanceOfTrains(latest.get, train) <= 50)) {
       historyData.last.speed = train.speed
+      historyData.last.heading = train.heading
     }
  
     // IF train has no location data OR previous train had exactly the same location...
     if (train.location.get == (0d, 0d) || latest != None && latest.get.location.get == train.location.get) {
       jammedOnce
-      if (historyData.size > 1 && isJammed) {
-        historyData.clear
-        historyData += train
-      }
+//      if (historyData.size > 1 && isJammed) {
+//        historyData.clear
+//        historyData += train
+//      }
     }
     
 //    if (isJammed) {
@@ -59,7 +60,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
 //      println("Size:       " + historyData.size + " (" + train.guid.get + ") (" + DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) + ")")
 //    }
     
-    if (historyData.size > HISTORY_DATA_MAX_SIZE || (historyData.size > 2 && DistanceCalculator.countDistance(oldestPoint._1, oldestPoint._2, latestPoint._1, latestPoint._2) > GATHER_TRAIN_HISTORY_IN_KM * 1000)) {
+    if (historyData.size > HISTORY_DATA_MAX_SIZE || (historyData.size > 2 && TrainDistanceCalculator.countDistance(oldest.get, latest.get) > GATHER_TRAIN_HISTORY_IN_KM * 1000)) {
       historyData.dequeue
 //      println("Size after: " + historyData.size + " (" + train.guid.get + ")")
     }
@@ -69,11 +70,11 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     
   }
   
-  private def latestTrain(train: Train): Option[Train] = {
+  private def latestTrain: Option[Train] = {
     historyData.lastOption
   }
   
-  private def oldestTrain(train: Train): Option[Train] = {
+  private def oldestTrain: Option[Train] = {
     historyData.headOption
   }
   
@@ -86,14 +87,19 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   }
   
   private def distanceOfTrains(train1: Train, train2: Train): Int = {
-    DistanceCalculator.countDistance(train1.location.get._1, train1.location.get._2, train2.location.get._1, train2.location.get._2)
+    TrainDistanceCalculator.countDistance(train1, train2)
   }
   
   private def jammedOnce {
     jammed += 1
   }
-  
+
   private def removeFromJammed {
+    if (historyData.size > 0) {
+      val latest = latestTrain
+      historyData.clear
+      historyData += latest.get
+    }
     jammed = 0
   }
     
