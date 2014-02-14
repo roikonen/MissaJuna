@@ -6,7 +6,6 @@ scalaVersion := "2.10.2"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.2.1",
-  "com.newrelic.agent.java" % "newrelic-agent" % "3.4.2",
   jdbc,
   anorm,
   cache,
