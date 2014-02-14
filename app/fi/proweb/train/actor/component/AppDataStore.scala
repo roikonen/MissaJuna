@@ -15,7 +15,7 @@ abstract class AppDataStore[T <: AppData[T]](val decoratorProps: Props) extends 
   decorator ! DeliveryTarget(context.self)
   
   def commonOp: PartialFunction[Any, Unit] = {
-    case AppDataMsg(appData: T) => decorateOrStore(appData, sender)
+    case AppDataMsg(appData: T @unchecked) => decorateOrStore(appData, sender)
   }
     
   def decorateOrStore(appData: T, sender: ActorRef) {

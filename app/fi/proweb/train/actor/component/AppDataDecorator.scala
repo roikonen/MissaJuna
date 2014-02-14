@@ -11,11 +11,16 @@ abstract class AppDataDecorator[T <: AppData[T]] extends Actor with ActorLogging
 
   var deliveryTarget: Option[ActorRef] = None
   
-  def receive = {
+  def receive = receiveCommon orElse receiveUnchecked
+  
+  def receiveCommon: PartialFunction[Any, Unit] = {
     case DeliveryTarget(target) => deliveryTarget = Some(target)
-    case AppDataMsg(appData: T) => decorateAndDeliver(appData)
   }
-    
+
+  def receiveUnchecked: PartialFunction[Any, Unit] = {
+    case AppDataMsg(appData: T @unchecked) => decorateAndDeliver(appData)
+  }
+  
   def decorateAndDeliver(appData: T) {
     if (deliveryTarget == None) {
       log.error("Empty Delivery target when trying to deliver")

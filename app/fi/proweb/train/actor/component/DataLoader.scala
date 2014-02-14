@@ -56,7 +56,7 @@ abstract class DataLoader[T <: AppData[T]](val validatorProps: Props, val format
     case Stop => scheduler ! Stop
     case Start(interval: FiniteDuration) => start(interval) 
     case Schedule(interval: FiniteDuration) => schedule(interval)
-    case AppDataMsg(appdata: T) => processAndDeliverToSubscribers(appdata)
+    case AppDataMsg(appdata: T @unchecked) => processAndDeliverToSubscribers(appdata)
     case Freeze => freezed = true
     case Melt => freezed = false
   }

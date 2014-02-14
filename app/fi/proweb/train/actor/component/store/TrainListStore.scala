@@ -6,6 +6,9 @@ import fi.proweb.train.actor.component.AppDataMsg
 import akka.actor.Props
 import fi.proweb.train.actor.component.decorator.TrainListDecorator
 
+/**
+ * This class is currently not used
+ */
 class TrainListStore extends AppDataStore[TrainList](Props[TrainListDecorator]) {
   
   def receive = commonOp orElse trainStoreOp
