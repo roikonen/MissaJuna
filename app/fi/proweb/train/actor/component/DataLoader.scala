@@ -57,8 +57,9 @@ abstract class DataLoader[T <: AppData[T]](val validatorProps: Props, val format
     case Start(interval: FiniteDuration) => start(interval) 
     case Schedule(interval: FiniteDuration) => schedule(interval)
     case AppDataMsg(appdata: T @unchecked) => processAndDeliverToSubscribers(appdata)
-    case Freeze => freezed = true; println("Freeze received by: " + context.self)
+    case Freeze => freezed = true
     case Melt => freezed = false
+    case x => log.error("Not expected to receive: " + x)
   }
   
   def process(appData: T)
