@@ -24,6 +24,10 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   private var historyData = Queue[Train]()
   private var jammed = 0
   
+  override def afterFreeze {
+    historyData.clear
+  }
+    
   def process(train: Train) {
 
     if (train.hasLocation) {
