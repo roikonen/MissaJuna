@@ -29,13 +29,13 @@ class TrainLoaderController extends Actor with ActorLogging {
     case UnsubscribeTrains => unsubscribe(sender)
     case ScheduleTrain(train: String, interval: FiniteDuration) => schedule(sender, train, interval)
     case Freeze(train: String) => trainLoaders(train) ! fi.proweb.train.actor.component.Freeze
-    case Melt(train: String) => trainLoaders(train) ! Melt
+    case Melt(train: String) => trainLoaders(train) ! fi.proweb.train.actor.component.Melt
     case x => log.error("Not expected to receive: " + x)
   }
   
   def createOrMelt(train: String, requester: ActorRef) {
     if (trainLoaders.isDefinedAt(train)) {
-      trainLoaders(train) ! Melt
+      trainLoaders(train) ! fi.proweb.train.actor.component.Melt
     } else {
 	    trainLoaders += (train -> context.actorOf(TrainLoader.props(train), "Trainloader_" + train))
 	    trainLoaders(train).tell(fi.proweb.train.actor.component.Get, requester)
