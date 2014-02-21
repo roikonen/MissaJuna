@@ -23,9 +23,14 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   
   private var historyData = Queue[Train]()
   private var jammed = 0
-  
+    
   override def afterFreeze {
+    println("TrainLoader:   " + context.self + " freezed.")
     historyData.clear
+  }
+  
+  override def afterMelt {
+    println("TrainLoader:   " + context.self + " melted.")
   }
     
   def process(train: Train) {
@@ -33,15 +38,20 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     if (train.hasLocation) {
       if (hasSameLocationAsBefore(train)) {
         jammedOnce
+        if (!isJammed) println("TrainLoader:   Train " + train.guid.get + " has the same location as before. Jammed size: " + jammed)
       } else if (hasSuspiciousLocationFromBefore(train)) {
         jammedOnce
+        if (!isJammed) println("TrainLoader:   Train " + train.guid.get + " has suspicious location from before. Difference to latest: " + distanceOfTrains(latestTrain.get, train) + " m. Jammed size: " + jammed)
       } else if (hasMovedEnoughToGetTracked(train)) {
+        if (jammed > 0) println("TrainLoader:   Train " + train.guid.get + " added to the train history.")
         addTrainToHistory(train)
       } else {
+        if (jammed > 0) println("TrainLoader:   Train " + train.guid.get + " updated latest train in the train history.")
         updateLatestTrainDetailsWith(train)
       }
     } else { // Train has no location
       jammedOnce
+      if (!isJammed) println("TrainLoader:   Train " + train.guid.get + " has no location data. Jammed size: " + jammed)
     }
 
 //    if (historyData.size > 1) {
@@ -80,11 +90,13 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   
   private def addTrainToHistory(train: Train) {
     if (isJammed) removeFromJammed
+    jammed = 0
     historyData += train
   }
 
   private def updateLatestTrainDetailsWith(train: Train) {
     if (isJammed) removeFromJammed
+    jammed = 0
     if (hasHistory) {
       val latest = latestTrain
       latest.get.speed = train.speed
@@ -117,14 +129,18 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   private def distanceOfTrains(train1: Train, train2: Train): Int = {
     TrainDistanceCalculator.countDistance(train1, train2)
   }
-  
+
   private def jammedOnce {
+    if (jammed == TRY_BEFORE_JAMMED) {
+      println("TrainLoader:   " + context.self + " jammed")
+      historyData.clear
+    }
     jammed += 1
   }
 
   private def removeFromJammed {
-    historyData.clear
     jammed = 0
+    println("TrainLoader:   " + context.self + " not jammed anymore")
   }
     
   private def isJammed: Boolean = {

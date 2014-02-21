@@ -47,7 +47,7 @@ class TrainRecorder extends Actor with ActorLogging {
         }
         all += 1
     }
-    println("Recorded " + recorded + " and updated " + updated + " of " + all + " trains")
+    println("TrainRecorder: Recorded " + recorded + " and updated " + updated + " of " + all + " trains")
   }
   
 }
