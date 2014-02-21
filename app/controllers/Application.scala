@@ -31,6 +31,10 @@ object Application extends Controller {
     })
   }
   
+  def keepAwake = Action.apply {
+    Ok(views.html.keepawake())
+  }
+  
   def observe(locLat: Double, locLon: Double) = Action.async {
     val future = (Global.trainObserverController ? CreateObserver(locLat, locLon)).mapTo[ObserverCreated]
     future.map(_ match {

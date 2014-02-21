@@ -24,25 +24,30 @@ class TrainRecorder extends Actor with ActorLogging {
     case StopRecordig => recording = false
     case Trains(list: TrainList) => record(list)
   }
-  
+
   def record(list: TrainList) {
+    var all, recorded, updated = 0
     list.trains.values.foreach {
-      train: Train => 
+      train: Train =>
         val trainPoint = TrainPoint(None, new BigDecimal(train.location.get._1.toString), new BigDecimal(train.location.get._2.toString), train.guid.get, new Date)
         val locLat = trainPoint.locLat.toString().toDouble
         val locLon = trainPoint.locLon.toString().toDouble
         if (locLat != 0d && locLon != 0d) {
           val trainPoints = TrainPoint.find(trainPoint, radius)
-	      if (trainPoints.size == 0) {
+          if (trainPoints.size == 0) {
 //	        println("Saving location    : " + trainPoint)
-	        TrainPoint.create(trainPoint)
-	      } else {
+            TrainPoint.create(trainPoint)
+            recorded += 1
+          } else {
 //	        println("Not saving location: " + trainPoint)
-	        trainPoints.foreach(TrainPoint.refreshUpdateDate(_))
-	        log.debug("Nearby train point for the same train (" + trainPoint.trainGuid + ") already exists")
-	      }
+            trainPoints.foreach(TrainPoint.refreshUpdateDate(_))
+            updated += 1
+            log.debug("Nearby train point for the same train (" + trainPoint.trainGuid + ") already exists")
+          }
         }
+        all += 1
     }
+    println("Recorded " + recorded + " and updated " + updated + " of " + all + " trains")
   }
   
 }
