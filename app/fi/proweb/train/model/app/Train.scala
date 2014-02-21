@@ -81,7 +81,7 @@ class Train extends AppData[Train] {
   }
   
   def hasLocation: Boolean = {
-    val locZero = (location != None && location.get == (0d, 0d))
+    val locZero = ((location != None) && (location.get._1 < 0.001) && (location.get._2 < 0.001))
     val locNone = (location == None)
     !(locZero || locNone)
   }
