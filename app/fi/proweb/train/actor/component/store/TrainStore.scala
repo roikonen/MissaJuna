@@ -33,12 +33,13 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   def trainStoreOp: PartialFunction[Any, Unit] = {
     case GetTraintable => sender ! Traintable(traintable)
   }
-  
+
   override def store(train: Train) = {
-    
-    trainData(train.guid.get) = train 
-    adjustTrainLoaderScheduler(train)
-    restartTraintablePushScheduler
+    if (train.hasLocation) {
+      trainData(train.guid.get) = train
+      adjustTrainLoaderScheduler(train)
+      restartTraintablePushScheduler
+    }
   }
   
   def createTraintable: List[Train] = {
@@ -47,7 +48,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
     trainData.values.foreach {
       train: Train => 
         if (train.history.size > 1) {
-          val latest = train.history.lastOption.get 
+          val latest = train.history.last
           val distFromLatest = TrainDistanceCalculator.countDistance(latest, (locLat, locLon))
           val oldest = findOldest(distFromLatest, latest, train.history.toList).get
           val distFromOldest = TrainDistanceCalculator.countDistance(oldest, (locLat, locLon))
@@ -102,6 +103,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   }
   
   def schedule(train: Train, interval: FiniteDuration) {
+//    println("TrainStore:      Scheduling " + train.guid.get + " with interval of " + interval)
     context.parent ! ScheduleTrain(train.guid.get, interval)
   }
 
