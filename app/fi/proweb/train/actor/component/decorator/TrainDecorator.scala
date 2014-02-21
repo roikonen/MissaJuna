@@ -11,7 +11,7 @@ object TrainDecorator {
 
 class TrainDecorator(val locLat: Double, val locLon: Double) extends AppDataDecorator[Train] {
   
-  override def decorate(train: Train): Train = {   
+  override def decorate(train: Train): Train = {
     train.distance = Some(TrainDistanceCalculator.countDistance(train, (locLat, locLon)))
     train
   }
