@@ -93,6 +93,7 @@ class Train extends AppData[Train] {
     "Speed:        " + getSpeed + " km/h" + Properties.lineSeparator +
     "Heading:      " + getHeading + Properties.lineSeparator +
     "Next station: " + getNextStation + Properties.lineSeparator +
+    "History size: " + history.size + Properties.lineSeparator +
     "------------------------------" + Properties.lineSeparator
     
   private def getTitle: String = {
