@@ -46,7 +46,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
         if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " added to the train history.")
         addTrainToHistory(train)
       } else {
-        if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " updated latest train in the train history.")
+        println("TrainLoader pro: Train " + train.guid.get + " updated latest train in the train history.")
         updateLatestTrainDetailsWith(train)
       }
     } else { // Train has no location
