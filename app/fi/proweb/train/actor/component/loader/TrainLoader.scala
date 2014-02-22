@@ -55,15 +55,15 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
       if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has no location data. Jammed size: " + jammed)
     }
 
-    if (historyData.size > 1) {
-      println("TrainLoader:     History size before: " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
-    }
+//    if (historyData.size > 1) {
+//      println("TrainLoader:     History size before: " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
+//    }
     
     optimizeHistoryData
         
-    if (historyData.size > 1) {
-      println("TrainLoader:     History size after:  " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
-    }
+//    if (historyData.size > 1) {
+//      println("TrainLoader:     History size after:  " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
+//    }
     
     train.history = historyData
     train.jammed = isJammed
