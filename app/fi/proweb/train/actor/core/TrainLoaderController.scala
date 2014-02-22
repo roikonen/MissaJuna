@@ -49,7 +49,8 @@ class TrainLoaderController extends Actor with ActorLogging {
   }
   
   def subscribe(requester: ActorRef, trains: Set[String]) {
-    log.debug("Subscribe request received from: " + requester)
+    println("TrainLoaderCtrl: Subscribe request received from: " + requester)
+    unsubscribeUnNeededTrains(requester, trains)
     trains.foreach(trainLoaders(_).tell(fi.proweb.train.actor.component.Subscribe, requester))
     trains.foreach(trainLoaders(_).tell(fi.proweb.train.actor.component.Get, requester))
   }
@@ -58,6 +59,14 @@ class TrainLoaderController extends Actor with ActorLogging {
     val oldTrains = getTrainList(observer)
     observers.remove(observer)
     oldTrains.foreach(schedule(_, observer))
+  }
+  
+  def unsubscribeUnNeededTrains(observer: ActorRef, newTrains: Set[String]) {
+    val oldTrains = getTrainList(observer)
+    val trainsForUnsubscription = oldTrains diff newTrains
+    trainsForUnsubscription.foreach(observers(observer).remove(_))
+    trainsForUnsubscription.foreach(schedule(_, observer))
+    println("TrainLoaderCtrl: UnNeeded trains unsubscribed: " + trainsForUnsubscription)
   }
        
   def getTrainList(observer: ActorRef): Set[String] = {
@@ -69,20 +78,21 @@ class TrainLoaderController extends Actor with ActorLogging {
   }
     
   def schedule(train: String, observer: ActorRef) {
-    log.debug("Scheduling train: " + train)
     
     val trainIntervals = for {
       observer <- observers.values
       trainIntervalPair <- observer
       if trainIntervalPair._1 == train
     } yield trainIntervalPair
-    
+        
     if (trainIntervals.size == 0) {
       trainLoaders(train).tell(Unsubscribe, observer)
       trainLoaders(train) ! Stop
+      println("TrainLoaderCtrl: Stopped train loader scheduler: " + train)
     } else {
       val newInterval = trainIntervals.minBy(_._2)._2
       trainLoaders(train) ! fi.proweb.train.actor.component.Schedule(newInterval)
+//      println("TrainLoaderCtrl: Started train loader scheduler: " + train)
     }
   }
 

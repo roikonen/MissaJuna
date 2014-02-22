@@ -73,11 +73,13 @@ abstract class DataLoader[T <: AppData[T]](val validatorProps: Props, val format
   def afterMelt {}
   
   def start(interval: FiniteDuration) {
+//    println("DataLoader:      start(" + interval + ") " + context.self)
     scheduler ! Start(interval)
     lastInterval = Some(interval)
   }
   
   def schedule(interval: FiniteDuration) {
+//    println("DataLoader:      schedule(" + interval + ") " + context.self)
     scheduler ! Schedule(interval)
     lastInterval = Some(interval)
   }
@@ -127,5 +129,6 @@ abstract class DataLoader[T <: AppData[T]](val validatorProps: Props, val format
   
   def loadFailed(invalidLoadData: String) {
     // Do nothing with invalid load data for now
+    println("DataLoader:      load failed " + context.self)
   }
 }

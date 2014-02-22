@@ -53,11 +53,11 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
       addToMsgQ(Register(locLat, locLon), sender)
     } else {
       val trainsToObserve = TrainPoint.findTrains(locLat, locLon, Application.OBSERVATION_RADIUS).filter(allTrains.contains(_))
-      println(trainsToObserve)
+      println("TrainListLoader: Registering " + trainsToObserve + " " + sender)
       trainLoaderController.tell(SubscribeTrains(trainsToObserve.toSet), sender)
     }
   }
-  
+    
   def unRegister(msg: TrainListLoaderControllerMsg, sender: ActorRef) {
     if (allTrains.size == 0) {
       addToMsgQ(msg, sender)
@@ -79,6 +79,8 @@ class TrainListLoaderController(val trainLoaderController: ActorRef) extends Act
   
   def processTrainList(trainList: TrainList) {  
 
+//    println("TrainListLoader: Loaded a list of " + trainList.trains.size + " trains" )
+    
     recorder ! Trains(trainList)
     
     val oldTrains = allTrains

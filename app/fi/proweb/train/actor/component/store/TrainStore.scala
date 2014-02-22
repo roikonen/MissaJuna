@@ -35,11 +35,10 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   }
 
   override def store(train: Train) = {
-    if (train.hasLocation) {
-      trainData(train.guid.get) = train
-      adjustTrainLoaderScheduler(train)
-      restartTraintablePushScheduler
-    }
+//    println("TrainStore:      Received train: " + train.guid.get)
+    trainData(train.guid.get) = train
+    adjustTrainLoaderScheduler(train)
+    restartTraintablePushScheduler
   }
   
   def createTraintable: List[Train] = {
@@ -83,6 +82,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   def adjustTrainLoaderScheduler(train: Train) {
     log.debug("Scheduling trainLoader from store...")
     if (train.jammed) schedule(train, 1 minute)
+    else if (!train.hasLocation) schedule(train, 10 seconds)
     else if (train.history.size < 2) schedule(train, 5 seconds)
     else if (train.distance.get < 10 * 1000) schedule(train, 5 seconds)
     else if (train.distance.get < 20 * 1000) schedule(train, 10 seconds)

@@ -21,7 +21,7 @@ case class GetObserversTraintable(id: Long)
 case class Traintable(traintable: List[Train])
 case class Observer(observer: ActorRef)
 case object CleanObservers
-case class ReRegister(observerId: Long, loc: (Double, Double))
+case class Refresh(observerId: Long, loc: (Double, Double))
 
 object TrainObserverController {
   def props(trainListController: ActorRef, trainLoaderController: ActorRef): Props = Props(new TrainObserverController(trainListController, trainLoaderController))
@@ -36,7 +36,7 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
   private val cleanInterval = inactiveObserverTimeToLive
   private val cleanScheduler = context.system.scheduler.schedule(cleanInterval, cleanInterval, context.self, CleanObservers)(context.system.dispatcher, ActorRef.noSender)
   
-  private val reRegisterInterval = 5 minutes
+  private val refreshInterval = 5 minutes
   
   private var observerIdCounter = 0L
   private var observers = Map[Long, (ActorRef, Deadline, Cancellable)]()
@@ -45,7 +45,7 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
     case CreateObserver(locLat: Double, locLon: Double) => createObserver(locLat, locLon, sender)
     case GetObserversTraintable(id: Long) => getTraintable(id, sender)
     case CleanObservers => cleanObservers
-    case ReRegister(observerId: Long, loc: (Double, Double)) => reRegister(observers(observerId)._1, loc._1, loc._2)
+    case Refresh(observerId: Long, loc: (Double, Double)) => reRegister(observers(observerId)._1, loc._1, loc._2)
   }
   
   def createObserver(locLat: Double, locLon: Double, sender: ActorRef) {
@@ -55,15 +55,14 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
     val observer = Akka.system().actorOf(TrainObserver.props(trainController, locLat, locLon), "TrainObserver_" + observerId)
     trainListController.tell(Register(locLat, locLon), observer)
     
-    val reRegisterer = context.system.scheduler.schedule(reRegisterInterval, reRegisterInterval, context.self, ReRegister(observerId, (locLat, locLon)))(context.system.dispatcher, ActorRef.noSender)
+    val refresher = context.system.scheduler.schedule(refreshInterval, refreshInterval, context.self, Refresh(observerId, (locLat, locLon)))(context.system.dispatcher, ActorRef.noSender)
     
-    observers += (observerId -> (observer, inactiveObserverTimeToLive fromNow, reRegisterer))
+    observers += (observerId -> (observer, inactiveObserverTimeToLive fromNow, refresher))
     sender ! ObserverCreated(observerId)
   }
   
   def reRegister(observer: ActorRef, locLat: Double, locLon: Double) {
-    log.debug("Re-registering observer: " + observer)
-    trainListController.tell(Unregister, observer)
+    log.debug("TrainObsrvrCtrl: Re-registering observer: " + observer)
     trainListController.tell(Register(locLat, locLon), observer)
   }
   

@@ -46,23 +46,24 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
         if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " added to the train history.")
         addTrainToHistory(train)
       } else {
-        println("TrainLoader pro: Train " + train.guid.get + " updated latest train in the train history.")
+        if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " updated latest train in the train history.")
         updateLatestTrainDetailsWith(train)
       }
     } else { // Train has no location
       jammedOnce
+      if (hasHistory) train.location = latestTrain.get.location
       if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has no location data. Jammed size: " + jammed)
     }
 
-//    if (historyData.size > 1) {
-//      println("TrainLoader:     History size before: " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
-//    }
+    if (historyData.size > 1) {
+      println("TrainLoader:     History size before: " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
+    }
     
     optimizeHistoryData
         
-//    if (historyData.size > 1) {
-//      println("TrainLoader:     History size after:  " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
-//    }
+    if (historyData.size > 1) {
+      println("TrainLoader:     History size after:  " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
+    }
     
     train.history = historyData
     train.jammed = isJammed
