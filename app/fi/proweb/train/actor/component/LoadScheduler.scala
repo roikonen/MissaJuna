@@ -8,8 +8,10 @@ import akka.actor.ActorLogging
 
 class LoadScheduler extends Actor with ActorLogging {
 
+  private val ZERO_DURATION = 0 seconds
+  
   private var scheduler: Option[Cancellable] = None
-  private var currentInterval = 0 seconds
+  private var currentInterval = ZERO_DURATION
   
   def receive = {
     case Stop => stop
@@ -26,6 +28,7 @@ class LoadScheduler extends Actor with ActorLogging {
   
   def stop {
     scheduler.foreach(_.cancel)
+    currentInterval = ZERO_DURATION
     log.debug("Scheduler stopped")
   }
   
