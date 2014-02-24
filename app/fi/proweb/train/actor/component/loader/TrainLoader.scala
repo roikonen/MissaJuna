@@ -37,25 +37,27 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     
   def process(train: Train) {
     var oneJammed = false
+    var addedToHistory = false
     
     if (train.hasLocation) {
       if (hasSameLocationAsBefore(train)) {
         oneJammed = true
-        if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has the same location as before. Jammed size: " + jammed)
+        if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has the same location as before. Jammed size: " + (jammed + 1))
       } else if (hasSuspiciousLocationFromBefore(train)) {
         oneJammed = true
-        if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious location from before. Difference to latest: " + distanceOfTrains(latestTrain.get, train) + " m. Jammed size: " + jammed)
+        if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious location from before. Difference to latest: " + distanceOfTrains(latestTrain.get, train) + " m. Jammed size: " + (jammed + 1))
       } else if (hasMovedEnoughToGetTracked(train)) {
         if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " added to the train history.")
         addTrainToHistory(train)
+        addedToHistory = true
       } else {
         if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " updated latest train in the train history.")
-        updateLatestTrainDetailsWith(train)
+        updateLatestTrainLocationDetailsWith(train)
       }
     } else { // Train has no location
       oneJammed = true
       if (hasHistory) train.location = latestTrain.get.location
-      if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has no location data. Jammed size: " + jammed)
+      if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has no location data. Jammed size: " + (jammed + 1))
     }
 
     if (oneJammed) {
@@ -63,7 +65,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     } else {
       successOnce
     }
-    
+        
 //    if (historyData.size > 1) {
 //      println("TrainLoader:     History size before: " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
 //    }
@@ -74,11 +76,13 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
 //      println("TrainLoader:     History size after:  " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
 //    }
     
-    train.history = historyData
-    train.jammed = isJammed
-    train.jammedRatio = countJammedRatio
-    train.jammedRatioSampleSize = jammedRatioQ.size
-    
+    if (addedToHistory) {
+      train.history = historyData
+      addJammedDetailsTo(train)
+    } else {
+      updateLatestTrainJammedDetails
+    }
+        
   }
     
   private def hasSuspiciousLocationFromBefore(train: Train): Boolean = {
@@ -104,11 +108,23 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     historyData += train
   }
 
-  private def updateLatestTrainDetailsWith(train: Train) {
+  private def updateLatestTrainLocationDetailsWith(train: Train) {
     if (hasHistory) {
-      val latest = latestTrain
-      latest.get.speed = train.speed
-      latest.get.heading = train.heading
+      val latest = latestTrain.get
+      latest.speed = train.speed
+      latest.heading = train.heading
+    }
+  }
+
+  private def addJammedDetailsTo(train: Train) {
+    train.jammed = isJammed
+    train.jammedRatio = countJammedRatio
+    train.jammedRatioSampleSize = jammedRatioQ.size
+  }
+  
+  private def updateLatestTrainJammedDetails {
+    if (hasHistory) {
+      addJammedDetailsTo(latestTrain.get)
     }
   }
   
