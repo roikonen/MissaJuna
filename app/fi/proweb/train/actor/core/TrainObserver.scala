@@ -11,6 +11,7 @@ import akka.actor.ActorLogging
 import fi.proweb.train.actor.component.AppDataMsg
 import scala.collection.mutable.Set
 import fi.proweb.train.actor.component.store.GetStoreTraintable
+import models.Traintable
 
 case object SubscribeTraintable
 case object UnsubscribeTraintable
@@ -35,7 +36,7 @@ class TrainObserver(
     case SubscribeTraintable => subscribeTraintable(sender)
     case UnsubscribeTraintable => unsubscribeTraintable(sender)
     case GetObserverTraintable => sendAlsoTo = Option(sender); store ! GetStoreTraintable
-    case Traintable(traintable: List[Train]) => redirectTraintable(traintable) 
+    case traintable: Traintable => redirectTraintable(traintable) 
     case schedule: ScheduleTrain => redirectSchedule(schedule)
     case msg => store.tell(msg, sender) // Redirect rest of the messages to store
   }
@@ -49,10 +50,10 @@ class TrainObserver(
   }
   
   // Redirect traintable push to observer's owner
-  def redirectTraintable(traintable: List[Train]) {
+  def redirectTraintable(traintable: Traintable) {
     log.debug("Received and redirecting traintable...")
-    subscribers.foreach(_ ! Traintable(traintable))
-    sendAlsoTo.foreach(_ ! Traintable(traintable))
+    subscribers.foreach(_ ! traintable)
+    sendAlsoTo.foreach(_ ! traintable)
     sendAlsoTo = None
   }
   

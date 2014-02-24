@@ -6,25 +6,44 @@ import fi.proweb.train.actor.component.AppDataMsg
 import akka.actor.Props
 import fi.proweb.train.actor.component.decorator.TrainDecorator
 import fi.proweb.train.actor.core.GetTraintable
-import fi.proweb.train.actor.core.Traintable
 import scala.collection.mutable.Map
 import scala.concurrent.duration._
 import akka.actor.Cancellable
 import fi.proweb.train.actor.core.ScheduleTrain
 import fi.proweb.train.helper.TrainDistanceCalculator
+import models.Traintable
+import TrainStore._
 
 case object GetStoreTraintable
 
 object TrainStore {
+
+  val TRAINTABLE_NOT_INITIALIZED = Traintable("Not initialized", List[models.Train]())
+  val TRAINTABLE_NO_CONTENT = Traintable("No content", List[models.Train]())
+
   def props(locLat: Double, locLon: Double): Props = Props(new TrainStore(locLat, locLon))
+
+  implicit def Trainlist2Traintable(trains: List[Train]): Traintable = {
+    if (trains.size == 0) {
+      TRAINTABLE_NO_CONTENT
+    } else {
+      Traintable("OK", trains.map(train =>
+        models.Train(
+          train.getGuid, train.getTitle,
+          train.getDistanceInM, train.getSpeed, train.getHeading,
+          train.getFirstStation, train.getPreviousStation, train.getNextStation, train.getLastStation,
+          train.getHistorySize, train.getHistoryLengthInKm,
+          train.getNumJammed, train.getNumSamples)))
+    }
+  }
 }
 
 class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Train](TrainDecorator.props(locLat, locLon)) {
     
   // How long to wait for other data before delivering forward
   val waitTime = 1 second
-  
-  private var traintable = List[Train]()
+
+  private var traintable = TRAINTABLE_NOT_INITIALIZED
   
   private var trainData = Map[String, Train]()
   
@@ -33,7 +52,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   def receive = commonOp orElse trainStoreOp
   
   def trainStoreOp: PartialFunction[Any, Unit] = {
-    case GetStoreTraintable => sender ! Traintable(traintable)
+    case GetStoreTraintable => sender ! traintable
   }
 
   override def store(train: Train) = {
@@ -42,10 +61,10 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
     adjustTrainLoaderScheduler(train)
     restartTraintablePushScheduler
   }
-  
-  def createTraintable: List[Train] = {
     
-    var newTraintable: List[Train] = List()
+  def createTraintable: Traintable = {
+    
+    var trainlist: List[Train] = List()
     trainData.values.foreach {
       train: Train => 
         if (train.history.size > 1) {
@@ -54,11 +73,11 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
           val oldest = findOldest(distFromLatest, latest, train.history.toList).get
           val distFromOldest = TrainDistanceCalculator.countDistance(oldest, (locLat, locLon))
           if (distFromLatest < distFromOldest) {
-            newTraintable = trainData(latest.guid.get) :: newTraintable
+            trainlist = trainData(latest.guid.get) :: trainlist
           }
         }
     }
-    traintable = newTraintable sortBy(_.distance)
+    traintable = trainlist sortBy(_.distance)
     traintable
   }
   
@@ -101,7 +120,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   def deliverForward = {
     log.debug("Delivering traintable to observer...")
     if (context == null) println("null context for: " + self)
-    else context.parent ! Traintable(createTraintable)
+    else context.parent ! createTraintable
   }
   
   def schedule(train: Train, interval: FiniteDuration) {

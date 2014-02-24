@@ -14,14 +14,12 @@ import akka.util.Timeout
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import fi.proweb.train.model.app.TrainStation
 import akka.actor.Cancellable
+import models.Traintable
 
 // IN
 case class GetTraintable(locLat: Double, locLon: Double)
 case object CleanObservers
 private case class RefreshObserver(locLat: Double, locLon: Double)
-
-// OUT
-case class Traintable(traintable: List[Train])
 
 object TrainObserverController {
   def props(trainListController: ActorRef, trainLoaderController: ActorRef): Props = Props(new TrainObserverController(trainListController, trainLoaderController))

@@ -9,10 +9,11 @@ import scala.concurrent.duration._
 import play.api.libs.concurrent._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import fi.proweb.train.actor.core.GetTraintable
-import fi.proweb.train.actor.core.Traintable
 import fi.proweb.train.model.app.Train
 import util.Properties
 import models.TrainPoint
+import play.api.libs.json.Json
+import models.Traintable
 
 object Application extends Controller {
 
@@ -28,18 +29,18 @@ object Application extends Controller {
     val locLon = 23.761861
     Ok(views.html.index(locLat, locLon))
   }
-      
+  
   def traintable(locLat: Double, locLon: Double) = Action.async {
     val future = (Global.trainObserverController ? GetTraintable(locLat, locLon)).mapTo[Traintable]
     future.map(_ match {
-      case Traintable(traintable: List[Train]) => Ok(views.html.traintable(traintable mkString(Properties.lineSeparator + Properties.lineSeparator)))
+      case traintable: Traintable => Ok(Json.toJson(traintable))
     })
   }
   
   def traintableDebug(locLat: Double, locLon: Double) = Action.async {
     val future = (Global.trainObserverController ? GetTraintable(locLat, locLon)).mapTo[Traintable]
     future.map(_ match {
-      case Traintable(traintable: List[Train]) => Ok(views.html.traintable(traintable mkString(Properties.lineSeparator + Properties.lineSeparator)))
+      case traintable: Traintable => Ok(views.html.traintable(traintable.toString))
     })
   }
   
