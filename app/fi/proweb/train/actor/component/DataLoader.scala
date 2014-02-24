@@ -57,9 +57,17 @@ abstract class DataLoader[T <: AppData[T]](val validatorProps: Props, val format
     case Start(interval: FiniteDuration) => start(interval) 
     case Schedule(interval: FiniteDuration) => schedule(interval)
     case AppDataMsg(appdata: T @unchecked) => processAndDeliverToSubscribers(appdata)
-    case Freeze => beforeFreeze; freezed = true; afterFreeze 
-    case Melt => beforeMelt; freezed = false; afterMelt
+    case Freeze => beforeFreeze; freeze; afterFreeze 
+    case Melt => beforeMelt; melt; afterMelt
     case x => log.error("Not expected to receive: " + x)
+  }
+  
+  def clearData {
+    subscribers = Set[ActorRef]()
+    deliverAlsoTo = None
+    dataCache = None
+    latestLoadFuture = None
+    lastInterval = None
   }
   
   def process(appData: T)
@@ -71,6 +79,15 @@ abstract class DataLoader[T <: AppData[T]](val validatorProps: Props, val format
   def beforeMelt {}
   
   def afterMelt {}
+  
+  def freeze {
+    freezed = true
+    clearData
+  }
+  
+  def melt {
+    freezed = false
+  }
   
   def start(interval: FiniteDuration) {
 //    println("DataLoader:      start(" + interval + ") " + context.self)

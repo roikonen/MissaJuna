@@ -50,7 +50,6 @@ class TrainLoaderController extends Actor with ActorLogging {
   
   def subscribe(requester: ActorRef, trains: Set[String]) {
     println("TrainLoaderCtrl: Subscribe request received from: " + requester)
-    unsubscribeUnNeededTrains(requester, trains)
     trains.foreach(trainLoaders(_).tell(fi.proweb.train.actor.component.Subscribe, requester))
     trains.foreach(trainLoaders(_).tell(fi.proweb.train.actor.component.Get, requester))
   }
@@ -59,14 +58,6 @@ class TrainLoaderController extends Actor with ActorLogging {
     val oldTrains = getTrainList(observer)
     observers.remove(observer)
     oldTrains.foreach(schedule(_, observer))
-  }
-  
-  def unsubscribeUnNeededTrains(observer: ActorRef, newTrains: Set[String]) {
-    val oldTrains = getTrainList(observer)
-    val trainsForUnsubscription = oldTrains diff newTrains
-    trainsForUnsubscription.foreach(observers(observer).remove(_))
-    trainsForUnsubscription.foreach(schedule(_, observer))
-    println("TrainLoaderCtrl: UnNeeded trains unsubscribed: " + trainsForUnsubscription)
   }
        
   def getTrainList(observer: ActorRef): Set[String] = {
