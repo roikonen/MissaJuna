@@ -4,7 +4,7 @@ import util.Properties
 import play.api.libs.json._
 
 case class Train(
-    guid: String, title: String, 
+    guid: String, title: String, timestamp: String,
     locLat: Double, locLon: Double,
     distance: Int, speed: Int, heading: String, 
     first: String, previous: String, next: String, last: String,
@@ -15,6 +15,7 @@ case class Train(
   override def toString = 
     "------------------------------" + Properties.lineSeparator +
     "Train:        " + title + " (" + guid + ")" + Properties.lineSeparator +
+    "Timestamp:    " + timestamp + Properties.lineSeparator +
     "Distance:     " + distance + " m" + Properties.lineSeparator +
     "Location:     " + locLat + "," + locLon + Properties.lineSeparator +
     "Speed:        " + speed + " km/h" + Properties.lineSeparator +
@@ -35,6 +36,7 @@ object Train {
       Json.obj(
         "guid" -> train.guid,
         "title" -> train.title,
+        "timestamp" -> train.timestamp,
         "locLat" -> train.locLat,
         "locLon" -> train.locLon,
         "distance" -> train.distance,

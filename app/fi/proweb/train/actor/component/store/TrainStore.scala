@@ -29,7 +29,7 @@ object TrainStore {
     } else {
       Traintable("OK", trains.map(train =>
         models.Train(
-          train.getGuid, train.getTitle,
+          train.getGuid, train.getTitle, train.getTimestamp,
           train.getLocLat, train.getLocLon,
           train.getDistanceInM, train.getSpeed, train.getHeading,
           train.getFirstStation, train.getPreviousStation, train.getNextStation, train.getLastStation,

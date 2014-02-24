@@ -17,6 +17,9 @@ class Train extends AppData[Train] {
   // Train title
   var title: Option[String] = None
   
+  // Timestam (When is train data received by loader)
+  var timestamp: Option[String] = None
+  
   // Location update time
   var lastBuildDate: Option[String] = None
   
@@ -44,6 +47,7 @@ class Train extends AppData[Train] {
     val train = new Train
     train.guid = guid
     train.title = title
+    train.timestamp = timestamp
     train.lastBuildDate = lastBuildDate
     train.distance = distance
     train.location = location
@@ -147,4 +151,6 @@ class Train extends AppData[Train] {
   
   def getNumSamples = numSamples
  
+  def getTimestamp = timestamp.getOrElse(NOT_AVAILABLE)
+  
 }
