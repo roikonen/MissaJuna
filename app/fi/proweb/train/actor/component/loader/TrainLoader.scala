@@ -50,7 +50,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
         if (hasHistory) train.location = latestTrain.get.location
       } else if (hasSuspiciousSpeed(train)) {
         oneJammed = true
-        if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious speed: " + train.speed + " km/h. Jammed size: " + (jammed + 1))
+        if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious speed: " + train.speed.get + " km/h. Jammed size: " + (jammed + 1))
         if (hasHistory) train.speed = latestTrain.get.speed
       } else if (hasMovedEnoughToGetTracked(train)) {
         if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " added to the train history.")
