@@ -76,13 +76,13 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
 //      println("TrainLoader:     History size after:  " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
 //    }
     
-    if (addedToHistory) {
-      train.history = historyData
-      addJammedDetailsTo(train)
-    } else {
+    if (!addedToHistory) {
       updateLatestTrainJammedDetails
     }
         
+    train.history = historyData
+    addJammedDetailsTo(train)
+    
   }
     
   private def hasSuspiciousLocationFromBefore(train: Train): Boolean = {
