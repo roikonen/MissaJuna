@@ -118,8 +118,8 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
 
   private def addJammedDetailsTo(train: Train) {
     train.jammed = isJammed
-    train.jammedRatio = countJammedRatio
-    train.jammedRatioSampleSize = jammedRatioQ.size
+    train.numJammed = jammedRatioQ.count(_ == true)
+    train.numSamples = jammedRatioQ.size
   }
   
   private def updateLatestTrainJammedDetails {
@@ -182,9 +182,5 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     jammedRatioQ += isJammed
     if (jammedRatioQ.size > JAMMED_RATIO_SAMPLE_Q_MAX_SIZE) jammedRatioQ.dequeue
   }
-  
-  private def countJammedRatio: Double = {
-    (jammedRatioQ.count(_ == true)).toDouble / jammedRatioQ.size
-  }
-  
+    
 }

@@ -35,8 +35,8 @@ class Train extends AppData[Train] {
   var history: Queue[Train] = Queue[Train]()
   
   var jammed = false
-  var jammedRatio = 0d
-  var jammedRatioSampleSize = 0
+  var numJammed = 0
+  var numSamples = 0
     
   def makeCopy: Train = {
     val train = new Train
@@ -53,8 +53,8 @@ class Train extends AppData[Train] {
     
     train.history = history
     train.jammed = jammed
-    train.jammedRatio = jammedRatio
-    train.jammedRatioSampleSize = jammedRatioSampleSize
+    train.numJammed = numJammed
+    train.numSamples = numSamples
         
     train
   }
@@ -192,8 +192,7 @@ class Train extends AppData[Train] {
   }
   
   private def getJammedRatio: String = {
-    val jr100 = jammedRatio * jammedRatioSampleSize
-    jr100.toInt.toString + "/" + jammedRatioSampleSize
+    numJammed + "/" + numSamples
   }
   
 }
