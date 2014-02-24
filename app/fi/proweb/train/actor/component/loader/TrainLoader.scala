@@ -19,7 +19,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   val GATHER_TRAIN_HISTORY_IN_KM = 5
   val HISTORY_DATA_MAX_SIZE = 50
   val MIN_DISTANCE_IN_M_BETWEEN_SUCCESSIVE_SAMPLES = 50
-  val MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES = 50
+  val MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES = 200
   val JAMMED_RATIO_SAMPLE_Q_MAX_SIZE = 100
   
   private var historyData = Queue[Train]()
