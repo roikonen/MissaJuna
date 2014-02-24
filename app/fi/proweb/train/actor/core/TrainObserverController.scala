@@ -38,6 +38,8 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
   
   private var observers = Map[(Double, Double), (ActorRef, Deadline, Cancellable)]()
   
+  private var incrId = 0
+  
   def receive = {
     case GetTraintable(locLat: Double, locLon: Double) => getTraintable(locLat: Double, locLon: Double, sender)
     case CleanObservers => cleanObservers
@@ -45,12 +47,15 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
   }
   
   def createObserver(locLat: Double, locLon: Double): ActorRef = {
-    val observer = Akka.system().actorOf(TrainObserver.props(trainController, locLat, locLon), "TrainObserver_" + locLat + "_" + locLon)
+    val observer = Akka.system().actorOf(TrainObserver.props(trainController, locLat, locLon), "TrainObserver_" + locLat + "_" + locLon + "_" + incrId)
     trainListController.tell(Register(locLat, locLon), observer)
     
     val refresher = context.system.scheduler.schedule(refreshInterval, refreshInterval, context.self, RefreshObserver(locLat, locLon))(context.system.dispatcher, ActorRef.noSender)
     
     observers += ((locLat, locLon) -> (observer, inactiveObserverTimeToLive fromNow, refresher))
+    
+    incrId += 1
+    
     observer
   }
   
