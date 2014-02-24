@@ -21,6 +21,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   val MIN_DISTANCE_IN_M_BETWEEN_SUCCESSIVE_SAMPLES = 50
   val MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES = 200
   val JAMMED_RATIO_SAMPLE_Q_MAX_SIZE = 100
+  val MAX_TRAIN_SPEED = 300
   
   private var historyData = Queue[Train]()
   private var jammed = 0
@@ -46,6 +47,9 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
       } else if (hasSuspiciousLocationFromBefore(train)) {
         oneJammed = true
         if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious location from before. Difference to latest: " + distanceOfTrains(latestTrain.get, train) + " m. Jammed size: " + (jammed + 1))
+      } else if (hasSuspiciousSpeed(train)) {
+        oneJammed = true
+        if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious speed: " + train.speed + " km/h. Jammed size: " + (jammed + 1))
       } else if (hasMovedEnoughToGetTracked(train)) {
         if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " added to the train history.")
         addTrainToHistory(train)
@@ -88,6 +92,10 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   private def hasSuspiciousLocationFromBefore(train: Train): Boolean = {
     if (hasHistory) distanceOfTrains(latestTrain.get, train) > MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES * 1000
     else false
+  }
+  
+  private def hasSuspiciousSpeed(train: Train): Boolean = {
+    train.speed.getOrElse(MAX_TRAIN_SPEED+1) > MAX_TRAIN_SPEED
   }
   
   private def hasMovedEnoughToGetTracked(train: Train): Boolean = {
