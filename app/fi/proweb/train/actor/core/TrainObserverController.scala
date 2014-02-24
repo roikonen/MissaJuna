@@ -31,7 +31,7 @@ class TrainObserverController(val trainListController: ActorRef, val trainContro
 
   implicit val timeout = Timeout(5 seconds)
   
-  private val inactiveObserverTimeToLive = 30 seconds
+  private val inactiveObserverTimeToLive = 1 minute
 
   private val cleanInterval = inactiveObserverTimeToLive
   private val cleanScheduler = context.system.scheduler.schedule(cleanInterval, cleanInterval, context.self, CleanObservers)(context.system.dispatcher, ActorRef.noSender)
