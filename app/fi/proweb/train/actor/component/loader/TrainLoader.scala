@@ -45,9 +45,11 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
         oneJammed = true
         if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has the same location as before. Jammed size: " + (jammed + 1))
       } else if (hasSuspiciousLocationFromBefore(train)) {
+        if (hasHistory) train.location = latestTrain.get.location
         oneJammed = true
         if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious location from before. Difference to latest: " + distanceOfTrains(latestTrain.get, train) + " m. Jammed size: " + (jammed + 1))
       } else if (hasSuspiciousSpeed(train)) {
+        if (hasHistory) train.speed = latestTrain.get.speed
         oneJammed = true
         if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious speed: " + train.speed + " km/h. Jammed size: " + (jammed + 1))
       } else if (hasMovedEnoughToGetTracked(train)) {
