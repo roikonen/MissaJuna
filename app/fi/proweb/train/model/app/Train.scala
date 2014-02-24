@@ -5,6 +5,7 @@ import fi.proweb.train.data.RailNetwork
 import util.Properties
 import scala.collection.mutable.MutableList
 import scala.collection.mutable.Queue
+import fi.proweb.train.helper.TrainDistanceCalculator
 
 class Train extends AppData[Train] {
 
@@ -68,8 +69,22 @@ class Train extends AppData[Train] {
     }
   }
   
+  def previousStation: TrainStation = {  
+    val revStations = stations.reverse
+    if (revStations.exists(_.completed.getOrElse(false))) {
+      val nextStationIndex = revStations.indexWhere(_.completed.getOrElse(false))
+      revStations(nextStationIndex)
+    } else {
+      stations.head
+    }
+  }
+  
   def nextStationCode: String = {
     nextStation.stationCode.getOrElse("?")
+  }
+  
+  def previousStationCode: String = {
+    previousStation.stationCode.getOrElse("?")
   }
   
   def stationTitle(stationCode: String): String = {
@@ -92,9 +107,14 @@ class Train extends AppData[Train] {
     "Distance:     " + getDistanceInKm + " km" + Properties.lineSeparator +
     "Speed:        " + getSpeed + " km/h" + Properties.lineSeparator +
     "Heading:      " + getHeading + Properties.lineSeparator +
-    "Next station: " + getNextStation + Properties.lineSeparator +
-    "History size: " + history.size + Properties.lineSeparator +
+    "Direction:    " + getPreviousStation + " -> " + getNextStation + Properties.lineSeparator +
+    "History size: " + history.size + " (" + getHistoryDistance + " km)" + Properties.lineSeparator +
     "------------------------------" + Properties.lineSeparator
+        
+  private def getHistoryDistance: Int = {
+    if (history.size > 1) TrainDistanceCalculator.countDistance(history.head, history.last)
+    else 0
+  }
     
   private def getTitle: String = {
     title.getOrElse("?")
@@ -135,4 +155,13 @@ class Train extends AppData[Train] {
       stationTitle(nextStationCode)
     }
   }
+  
+  private def getPreviousStation: String = {
+    if (jammed) {
+      "JAMMED"
+    } else {
+      stationTitle(previousStationCode)
+    }
+  }
+
 }
