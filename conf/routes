@@ -3,12 +3,13 @@
 # ~~~~
 
 # Home page
-GET     /                                         controllers.Application.index
-GET     /observe/:locLat/:locLon                  controllers.Application.observe(locLat: Double, locLon: Double)
-GET     /traintable/:observerId/:locLat/:locLon   controllers.Application.traintable(observerId: Long, locLat: Double, locLon: Double)
+GET     /                                         controllers.Application.indexDebug
+GET     /debug/traintable/:locLat/:locLon         controllers.Application.traintableDebug(locLat: Double, locLon: Double)
 
-GET     /trainpoint/countAll                      controllers.Application.countTrainPoints
-GET     /trains/:locLat/:locLon                   controllers.Application.trainsNearBy(locLat: Double, locLon: Double)
+GET     /traintable/:locLat/:locLon               controllers.Application.traintable(locLat: Double, locLon: Double)
+
+GET     /debug/trainpoint/countAll                controllers.Application.countTrainPoints
+GET     /debug/trains/:locLat/:locLon             controllers.Application.trainsNearBy(locLat: Double, locLon: Double)
 
 GET     /wake                                     controllers.Application.keepAwake
 

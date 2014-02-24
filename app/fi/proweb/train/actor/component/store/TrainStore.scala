@@ -13,6 +13,8 @@ import akka.actor.Cancellable
 import fi.proweb.train.actor.core.ScheduleTrain
 import fi.proweb.train.helper.TrainDistanceCalculator
 
+case object GetStoreTraintable
+
 object TrainStore {
   def props(locLat: Double, locLon: Double): Props = Props(new TrainStore(locLat, locLon))
 }
@@ -31,7 +33,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   def receive = commonOp orElse trainStoreOp
   
   def trainStoreOp: PartialFunction[Any, Unit] = {
-    case GetTraintable => sender ! Traintable(traintable)
+    case GetStoreTraintable => sender ! Traintable(traintable)
   }
 
   override def store(train: Train) = {

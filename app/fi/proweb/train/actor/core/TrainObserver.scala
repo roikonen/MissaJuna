@@ -10,10 +10,11 @@ import fi.proweb.train.model.app.TrainStation
 import akka.actor.ActorLogging
 import fi.proweb.train.actor.component.AppDataMsg
 import scala.collection.mutable.Set
+import fi.proweb.train.actor.component.store.GetStoreTraintable
 
 case object SubscribeTraintable
 case object UnsubscribeTraintable
-case object GetTraintable
+case object GetObserverTraintable
 
 object TrainObserver {
   def props(
@@ -33,7 +34,7 @@ class TrainObserver(
   def receive = {
     case SubscribeTraintable => subscribeTraintable(sender)
     case UnsubscribeTraintable => unsubscribeTraintable(sender)
-    case GetTraintable => sendAlsoTo = Option(sender); store ! GetTraintable
+    case GetObserverTraintable => sendAlsoTo = Option(sender); store ! GetStoreTraintable
     case Traintable(traintable: List[Train]) => redirectTraintable(traintable) 
     case schedule: ScheduleTrain => redirectSchedule(schedule)
     case msg => store.tell(msg, sender) // Redirect rest of the messages to store
