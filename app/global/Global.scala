@@ -9,9 +9,7 @@ import fi.proweb.train.actor.core.TrainLoaderController
 import fi.proweb.train.actor.core.TrainListLoaderController
 import fi.proweb.train.actor.core.TrainObserverController
 import akka.actor.ActorRef
-import fi.proweb.train.actor.core.CreateObserver
 import scala.concurrent.Future
-import fi.proweb.train.actor.core.ObserverCreated
 import akka.util.Timeout
 import scala.concurrent.duration._
 
