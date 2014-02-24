@@ -116,6 +116,10 @@ class Train extends AppData[Train] {
     
   def getGuid: String = guid.getOrElse(NOT_AVAILABLE)
   
+  def getLocLat: Double = location.getOrElse(0d, 0d)._1
+  
+  def getLocLon: Double = location.getOrElse(0d, 0d)._2
+  
   def getDistanceInM: Int = distance.getOrElse(1000000)
   
   def getDistanceInKm: Double = distanceInKm.getOrElse(1000d)
@@ -142,25 +146,5 @@ class Train extends AppData[Train] {
   def getNumJammed = numJammed
   
   def getNumSamples = numSamples
-  
-  private def getJammedRatio: String = {
-    getNumJammed + "/" + getNumSamples
-  }
-  
-  def jamWrap(s: String): String = {
-    if (jammed) "JAMMED"
-    else s
-  }
-  
-  override def toString = 
-    "------------------------------" + Properties.lineSeparator +
-    "Train:        " + getTitle + " (" + getGuid + ")" + Properties.lineSeparator +
-    "Distance:     " + jamWrap(getDistanceInKm + " km") + Properties.lineSeparator +
-    "Speed:        " + jamWrap(getSpeed + " km/h") + Properties.lineSeparator +
-    "Heading:      " + jamWrap(getHeading) + Properties.lineSeparator +
-    "Route:        " + jamWrap(getFirstStation + " -> " + getLastStation) + Properties.lineSeparator +
-    "Stage:        " + jamWrap(getPreviousStation + " -> " + getNextStation) + Properties.lineSeparator +
-    "History size: " + getHistorySize + " (" + getHistoryLengthInKm + " km)" + Properties.lineSeparator +
-    "Jammed ratio: " + getJammedRatio + Properties.lineSeparator +
-    "------------------------------" + Properties.lineSeparator
+ 
 }

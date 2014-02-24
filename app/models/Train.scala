@@ -5,6 +5,7 @@ import play.api.libs.json._
 
 case class Train(
     guid: String, title: String, 
+    locLat: Double, locLon: Double,
     distance: Int, speed: Int, heading: String, 
     first: String, previous: String, next: String, last: String,
     historySize: Int, historyLengthInKm: Int,
@@ -15,6 +16,7 @@ case class Train(
     "------------------------------" + Properties.lineSeparator +
     "Train:        " + title + " (" + guid + ")" + Properties.lineSeparator +
     "Distance:     " + distance + " m" + Properties.lineSeparator +
+    "Location:     " + locLat + "," + locLon + Properties.lineSeparator +
     "Speed:        " + speed + " km/h" + Properties.lineSeparator +
     "Heading:      " + heading + Properties.lineSeparator +
     "Route:        " + first + " -> " + last + Properties.lineSeparator +
@@ -33,6 +35,8 @@ object Train {
       Json.obj(
         "guid" -> train.guid,
         "title" -> train.title,
+        "locLat" -> train.locLat,
+        "locLon" -> train.locLon,
         "distance" -> train.distance,
         "speed" -> train.speed,
         "heading" -> train.heading,

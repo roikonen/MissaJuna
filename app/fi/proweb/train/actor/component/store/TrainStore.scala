@@ -30,6 +30,7 @@ object TrainStore {
       Traintable("OK", trains.map(train =>
         models.Train(
           train.getGuid, train.getTitle,
+          train.getLocLat, train.getLocLon,
           train.getDistanceInM, train.getSpeed, train.getHeading,
           train.getFirstStation, train.getPreviousStation, train.getNextStation, train.getLastStation,
           train.getHistorySize, train.getHistoryLengthInKm,
