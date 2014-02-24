@@ -57,7 +57,7 @@ class TrainStore(val locLat: Double, val locLon: Double) extends AppDataStore[Tr
   }
 
   override def store(train: Train) = {
-//    println("TrainStore:      Received train: " + train.guid.get)
+//    println("TrainStore:      Received train: " + train.guid.get + " by " + context.self)
     trainData(train.guid.get) = train
     adjustTrainLoaderScheduler(train)
     restartTraintablePushScheduler
