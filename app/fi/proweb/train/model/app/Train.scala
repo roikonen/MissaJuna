@@ -35,6 +35,8 @@ class Train extends AppData[Train] {
   var history: Queue[Train] = Queue[Train]()
   
   var jammed = false
+  var jammedRatio = 0d
+  var jammedRatioSampleSize = 0
     
   def makeCopy: Train = {
     val train = new Train
@@ -51,12 +53,18 @@ class Train extends AppData[Train] {
     
     train.history = history
     train.jammed = jammed
+    train.jammedRatio = jammedRatio
+    train.jammedRatioSampleSize = jammedRatioSampleSize
         
     train
   }
   
   def distanceInKm: Option[Double] = {
     distance.map((dist: Int) => (dist.toDouble / 100d).round.toDouble / 10d)
+  }
+  
+  def lastStation: TrainStation = {  
+    stations.last
   }
   
   def nextStation: TrainStation = {  
@@ -79,13 +87,14 @@ class Train extends AppData[Train] {
     }
   }
   
-  def nextStationCode: String = {
-    nextStation.stationCode.getOrElse("?")
+  def firstStation: TrainStation = {  
+    stations.head
   }
   
-  def previousStationCode: String = {
-    previousStation.stationCode.getOrElse("?")
+  def ripStationCode(station: TrainStation): String =  {
+    station.stationCode.getOrElse("?")
   }
+  
   
   def stationTitle(stationCode: String): String = {
     if (RailNetwork.stations.isDefinedAt(stationCode)) {
@@ -107,8 +116,10 @@ class Train extends AppData[Train] {
     "Distance:     " + getDistanceInKm + " km" + Properties.lineSeparator +
     "Speed:        " + getSpeed + " km/h" + Properties.lineSeparator +
     "Heading:      " + getHeading + Properties.lineSeparator +
-    "Direction:    " + getPreviousStation + " -> " + getNextStation + Properties.lineSeparator +
+    "Route:        " + getFirstStation + " -> " + getLastStation + Properties.lineSeparator +
+    "Stage:        " + getPreviousStation + " -> " + getNextStation + Properties.lineSeparator +
     "History size: " + history.size + " (" + getHistoryDistance + " km)" + Properties.lineSeparator +
+    "Jammed ratio: " + getJammedRatio + Properties.lineSeparator +
     "------------------------------" + Properties.lineSeparator
         
   private def getHistoryDistance: Int = {
@@ -148,11 +159,19 @@ class Train extends AppData[Train] {
     }
   }
   
+  private def getLastStation: String = {
+    if (jammed) {
+      "JAMMED"
+    } else {
+      stationTitle(ripStationCode(lastStation))
+    }
+  }
+  
   private def getNextStation: String = {
     if (jammed) {
       "JAMMED"
     } else {
-      stationTitle(nextStationCode)
+      stationTitle(ripStationCode(nextStation))
     }
   }
   
@@ -160,8 +179,21 @@ class Train extends AppData[Train] {
     if (jammed) {
       "JAMMED"
     } else {
-      stationTitle(previousStationCode)
+      stationTitle(ripStationCode(previousStation))
     }
   }
 
+  private def getFirstStation: String = {
+    if (jammed) {
+      "JAMMED"
+    } else {
+      stationTitle(ripStationCode(firstStation))
+    }
+  }
+  
+  private def getJammedRatio: String = {
+    val jr100 = jammedRatio * jammedRatioSampleSize
+    jr100.toInt.toString + "/" + jammedRatioSampleSize
+  }
+  
 }

@@ -20,9 +20,11 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   val HISTORY_DATA_MAX_SIZE = 50
   val MIN_DISTANCE_IN_M_BETWEEN_SUCCESSIVE_SAMPLES = 50
   val MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES = 50
+  val JAMMED_RATIO_SAMPLE_Q_MAX_SIZE = 100
   
   private var historyData = Queue[Train]()
   private var jammed = 0
+  private var jammedRatioQ = Queue[Boolean]()
     
   override def afterFreeze {
     println("TrainLoader:     " + context.self + " freezed.")
@@ -34,13 +36,14 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   }
     
   def process(train: Train) {
+    var oneJammed = false
     
     if (train.hasLocation) {
       if (hasSameLocationAsBefore(train)) {
-        jammedOnce
+        oneJammed = true
         if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has the same location as before. Jammed size: " + jammed)
       } else if (hasSuspiciousLocationFromBefore(train)) {
-        jammedOnce
+        oneJammed = true
         if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has suspicious location from before. Difference to latest: " + distanceOfTrains(latestTrain.get, train) + " m. Jammed size: " + jammed)
       } else if (hasMovedEnoughToGetTracked(train)) {
         if (jammed > 0) println("TrainLoader pro: Train " + train.guid.get + " added to the train history.")
@@ -50,11 +53,17 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
         updateLatestTrainDetailsWith(train)
       }
     } else { // Train has no location
-      jammedOnce
+      oneJammed = true
       if (hasHistory) train.location = latestTrain.get.location
       if (!isJammed) println("TrainLoader pro: Train " + train.guid.get + " has no location data. Jammed size: " + jammed)
     }
 
+    if (oneJammed) {
+      jammedOnce
+    } else {
+      successOnce
+    }
+    
 //    if (historyData.size > 1) {
 //      println("TrainLoader:     History size before: " + historyData.size + " (" + train.guid.get + ") (" + TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) + ")")
 //    }
@@ -67,6 +76,8 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     
     train.history = historyData
     train.jammed = isJammed
+    train.jammedRatio = countJammedRatio
+    train.jammedRatioSampleSize = jammedRatioQ.size
     
   }
     
@@ -90,14 +101,10 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   }
   
   private def addTrainToHistory(train: Train) {
-    if (isJammed) removeFromJammed
-    jammed = 0
     historyData += train
   }
 
   private def updateLatestTrainDetailsWith(train: Train) {
-    if (isJammed) removeFromJammed
-    jammed = 0
     if (hasHistory) {
       val latest = latestTrain
       latest.get.speed = train.speed
@@ -137,6 +144,13 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
       historyData.clear
     }
     jammed += 1
+    updateJammedRatio(true)
+  }
+  
+  private def successOnce {
+    if (isJammed) removeFromJammed
+    jammed = 0
+    updateJammedRatio(false)
   }
 
   private def removeFromJammed {
@@ -146,6 +160,15 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
     
   private def isJammed: Boolean = {
     jammed > TRY_BEFORE_JAMMED
+  }
+  
+  private def updateJammedRatio(isJammed: Boolean) {
+    jammedRatioQ += isJammed
+    if (jammedRatioQ.size > JAMMED_RATIO_SAMPLE_Q_MAX_SIZE) jammedRatioQ.dequeue
+  }
+  
+  private def countJammedRatio: Double = {
+    (jammedRatioQ.count(_ == true)).toDouble / jammedRatioQ.size
   }
   
 }
