@@ -57,7 +57,10 @@ class TrainLoaderController extends Actor with ActorLogging {
   def unsubscribe(observer: ActorRef) {
     val oldTrains = getTrainList(observer)
     observers.remove(observer)
-    oldTrains.foreach(schedule(_, observer))
+    oldTrains.foreach { train =>
+      trainLoaders(train).tell(Unsubscribe, observer)
+      schedule(train, observer)
+    }
   }
        
   def getTrainList(observer: ActorRef): Set[String] = {
@@ -69,7 +72,7 @@ class TrainLoaderController extends Actor with ActorLogging {
   }
     
   def schedule(train: String, observer: ActorRef) {
-    
+        
     val trainIntervals = for {
       observer <- observers.values
       trainIntervalPair <- observer
@@ -77,7 +80,6 @@ class TrainLoaderController extends Actor with ActorLogging {
     } yield trainIntervalPair
         
     if (trainIntervals.size == 0) {
-      trainLoaders(train).tell(Unsubscribe, observer)
       trainLoaders(train) ! Stop
       println("TrainLoaderCtrl: Stopped train loader scheduler: " + train)
     } else {
