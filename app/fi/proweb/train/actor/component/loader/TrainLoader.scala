@@ -16,14 +16,16 @@ object TrainLoader {
 class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidator], Props[TrainFormatter], url) {
 
   val TRY_BEFORE_JAMMED = 10
-  val GATHER_TRAIN_HISTORY_IN_KM = 5
-  val HISTORY_DATA_MAX_SIZE = 50
+  val GATHER_TRAIN_HISTORY_IN_KM = 10
+  val WHEN_OPTIMIZING_SAVE_EVERY = 10
+  val HISTORY_DATA_MAX_SIZE = 3
   val MIN_DISTANCE_IN_M_BETWEEN_SUCCESSIVE_SAMPLES = 50
   val MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES = 200
   val JAMMED_RATIO_SAMPLE_Q_MAX_SIZE = 100
   val MAX_TRAIN_SPEED = 300
 
-  private var historyData = Queue[Train]()
+  private var historyId = WHEN_OPTIMIZING_SAVE_EVERY 
+  private var historyData = Queue[(Long, Train)]()
   private var jammed = 0
   private var jammedRatioQ = Queue[Boolean]()
 
@@ -86,7 +88,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
       updateLatestTrainJammedDetails
     }
 
-    train.history = historyData
+    train.history = historyData.unzip._2
     addJammedDetailsTo(train)
 
   }
@@ -115,7 +117,9 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   }
 
   private def addTrainToHistory(train: Train) {
-    historyData += train
+    historyData += ((historyId, train))
+    historyId += 1
+    if (historyId == Int.MaxValue) historyId = WHEN_OPTIMIZING_SAVE_EVERY
   }
 
   private def updateLatestTrainLocationDetailsWith(train: Train) {
@@ -139,17 +143,28 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   }
 
   private def optimizeHistoryData {
+    if (historyData.size > HISTORY_DATA_MAX_SIZE && historyData.size > 2) {
+      historyData.foreach(t => print(t._1 + " "))
+      println
+      historyData = historyData.filter(t => t._1 % WHEN_OPTIMIZING_SAVE_EVERY == 0 || t._1 == (historyId-1))
+      historyData.foreach(t => print(t._1 + " "))
+      println
+    }
     while (historyData.size > HISTORY_DATA_MAX_SIZE || (historyData.size > 2 && TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) > GATHER_TRAIN_HISTORY_IN_KM * 1000)) {
       historyData.dequeue
     }
   }
 
   private def latestTrain: Option[Train] = {
-    historyData.lastOption
+    val trainTuple = historyData.lastOption
+    if (trainTuple == None) None
+    else Some(trainTuple.get._2)
   }
 
   private def oldestTrain: Option[Train] = {
-    historyData.headOption
+    val trainTuple = historyData.headOption
+    if (trainTuple == None) None
+    else Some(trainTuple.get._2)
   }
 
   private def ripLocation(train: Option[Train]): (Double, Double) = {
