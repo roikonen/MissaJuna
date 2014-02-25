@@ -144,11 +144,11 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
 
   private def optimizeHistoryData {
     if (historyData.size > HISTORY_DATA_MAX_SIZE && historyData.size > 2) {
-      historyData.foreach(t => print(t._1 + " "))
-      println
+//      historyData.foreach(t => print(t._1 + " "))
+//      println
       historyData = historyData.filter(t => t._1 % WHEN_OPTIMIZING_SAVE_EVERY == 0 || t._1 == (historyId-1))
-      historyData.foreach(t => print(t._1 + " "))
-      println
+//      historyData.foreach(t => print(t._1 + " "))
+//      println
     }
     while (historyData.size > HISTORY_DATA_MAX_SIZE || (historyData.size > 2 && TrainDistanceCalculator.countDistance(oldestTrain.get, latestTrain.get) > GATHER_TRAIN_HISTORY_IN_KM * 1000)) {
       historyData.dequeue
