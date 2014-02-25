@@ -33,7 +33,7 @@ object TrainStore {
           train.getLocLat, train.getLocLon,
           train.getDistanceInM, train.getSpeed, train.getHeading,
           train.getFirstStation, train.getPreviousStation, train.getNextStation, train.getLastStation,
-          train.getHistorySize, train.getHistoryLengthInKm,
+          train.getHistorySize, train.getHistoryLengthInM,
           train.getNumJammed, train.getNumSamples)))
     }
   }

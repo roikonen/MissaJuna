@@ -142,7 +142,7 @@ class Train extends AppData[Train] {
     
   def getHistorySize = history.size
   
-  def getHistoryLengthInKm: Int = {
+  def getHistoryLengthInM: Int = {
     if (history.size > 1) TrainDistanceCalculator.countDistance(history.head, history.last)
     else 0
   }

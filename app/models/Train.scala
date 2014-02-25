@@ -8,7 +8,7 @@ case class Train(
     locLat: Double, locLon: Double,
     distance: Int, speed: Int, heading: String, 
     first: String, previous: String, next: String, last: String,
-    historySize: Int, historyLengthInKm: Int,
+    historySize: Int, historyLengthInM: Int,
     numJammed: Int, numSamples: Int
     ) {
   
@@ -22,7 +22,7 @@ case class Train(
     "Heading:      " + heading + Properties.lineSeparator +
     "Route:        " + first + " -> " + last + Properties.lineSeparator +
     "Stage:        " + previous + " -> " + next + Properties.lineSeparator +
-    "History size: " + historySize + " (" + historyLengthInKm + " km)" + Properties.lineSeparator +
+    "History size: " + historySize + " (" + historyLengthInM + " m)" + Properties.lineSeparator +
     "Jammed ratio: " + numJammed + "/" + numSamples + Properties.lineSeparator +
     "------------------------------" + Properties.lineSeparator
     
@@ -47,7 +47,7 @@ object Train {
         "next" -> train.next,
         "last" -> train.last,
         "historySize" -> train.historySize,
-        "historyLength" -> train.historyLengthInKm,
+        "historyLength" -> train.historyLengthInM,
         "numJammed" -> train.numJammed,
         "numSamples" -> train.numSamples
         )
