@@ -1,0 +1,67 @@
+@(googleApiKey: String, locLat: Double, locLon: Double)
+
+<!DOCTYPE html> 
+<html>
+<head>
+	<title>Missä juna?</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">	
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
+	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/mobile.css")">
+	<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+	<script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=@googleApiKey&sensor=true">
+    </script>
+	<script src="@routes.Assets.at("javascripts/observer-location.js")" type="text/javascript"></script>
+	
+	<script>
+		var defLocLat = @locLat;
+		var defLocLon = @locLon;
+		var targetIcon = "@routes.Assets.at("images/target_32.png")"
+	</script>
+	
+</head>
+
+<body>
+
+	<!-- Start of first page -->
+	<div data-url="map-page" data-role="page" id="map-page">
+	
+		<div data-role="header" data-theme="a">
+			<h1>Tarkasta/korjaa sijaintisi</h1>
+		</div><!-- /header -->
+		
+		<div role="main" class="ui-content" id="map-canvas">
+			<!-- map loads here... -->
+		</div><!-- /ui-content -->
+		
+		<div data-role="footer">
+			<h4>Page Footer</h4>
+		</div><!-- /footer -->
+		
+	</div>
+
+	<!-- Start of second page -->
+	<div data-role="page" id="trains">
+
+		<div data-role="header">
+			<h1>Junat</h1>
+		</div><!-- /header -->
+
+		<div role="main" class="ui-content">
+			<p>I'm the second in the source order so I'm hidden when the page
+				loads. I'm just shown if a link that references my id is beeing
+				clicked.</p>
+			<p>
+				<a href="#map-page">Back to map-page</a>
+			</p>
+		</div><!-- /content -->
+
+		<div data-role="footer">
+			<h4>Page Footer</h4>
+		</div><!-- /footer -->
+		
+	</div><!-- /page -->
+
+</body>
+</html>

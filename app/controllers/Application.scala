@@ -21,12 +21,13 @@ object Application extends Controller {
    * The radius from observers geo-location where to search trains to observe
    */
   val OBSERVATION_RADIUS = 1000
+  val DEFAULT_LOCATION = (61.348997, 23.761861)
   
   implicit val timeout = Timeout(5 seconds)
 
   def indexDebug = Action.apply {
-    val locLat = 61.348997
-    val locLon = 23.761861
+    val locLat = DEFAULT_LOCATION._1
+    val locLon = DEFAULT_LOCATION._2
     Ok(views.html.index(locLat, locLon))
   }
   
@@ -54,6 +55,10 @@ object Application extends Controller {
   
   def trainsNearBy(locLat: Double, locLon: Double) = Action.apply {
     Ok(TrainPoint.findTrains(locLat, locLon, OBSERVATION_RADIUS).toString)
+  }
+  
+  def mobile(googleApiKey: String) = Action.apply {
+    Ok(views.html.mobile(googleApiKey, DEFAULT_LOCATION._1, DEFAULT_LOCATION._2))
   }
    
 }
