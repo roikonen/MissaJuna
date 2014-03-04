@@ -3,17 +3,22 @@
 # ~~~~
 
 # Home page
-GET     /                                         controllers.Application.indexDebug
+GET     /                                        controllers.Application.index
+
+# With custon Google API Key
+GET     /key/:googleApiKey                       controllers.Application.mobile(googleApiKey: String)
+
+# Debug
+GET     /debug                                    controllers.Application.indexDebug
 GET     /debug/traintable/:locLat/:locLon         controllers.Application.traintableDebug(locLat: Double, locLon: Double)
-
-GET     /traintable/:locLat/:locLon               controllers.Application.traintable(locLat: Double, locLon: Double)
-
 GET     /debug/trainpoint/countAll                controllers.Application.countTrainPoints
 GET     /debug/trains/:locLat/:locLon             controllers.Application.trainsNearBy(locLat: Double, locLon: Double)
 
-GET     /wake                                     controllers.Application.keepAwake
+# JSON
+GET     /traintable/:locLat/:locLon               controllers.Application.traintable(locLat: Double, locLon: Double)
 
-GET     /mobile/:googleApiKey                     controllers.Application.mobile(googleApiKey: String)
+# Heroku waker
+GET     /wake                                     controllers.Application.keepAwake
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                             controllers.Assets.at(path="/public", file)

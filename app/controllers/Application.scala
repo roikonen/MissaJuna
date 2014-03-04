@@ -22,6 +22,7 @@ object Application extends Controller {
    */
   val OBSERVATION_RADIUS = 1000
   val DEFAULT_LOCATION = (61.348997, 23.761861)
+  val GOOGLE_API_KEY = "AIzaSyAayQ4J_OhlNkbbYZCLxEbWEmod9jRixcM"
   
   implicit val timeout = Timeout(5 seconds)
 
@@ -29,6 +30,10 @@ object Application extends Controller {
     val locLat = DEFAULT_LOCATION._1
     val locLon = DEFAULT_LOCATION._2
     Ok(views.html.index(locLat, locLon))
+  }
+  
+  def index = Action.apply {
+    Ok(views.html.mobile(GOOGLE_API_KEY, DEFAULT_LOCATION._1, DEFAULT_LOCATION._2))
   }
   
   def traintable(locLat: Double, locLon: Double) = Action.async {

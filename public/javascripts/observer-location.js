@@ -2,6 +2,8 @@
  * Google Maps documentation: http://code.google.com/apis/maps/documentation/javascript/basics.html
  * Geolocation documentation: http://dev.w3.org/geo/api/spec-source.html
  */
+var map;
+
 $( document ).on( "pagecreate", "#map-page", function() {
     
 	var defaultLatLng = new google.maps.LatLng(defLocLat, defLocLon);  // Default when no geolocation support
@@ -26,7 +28,7 @@ $( document ).on( "pagecreate", "#map-page", function() {
             center: latlng,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
-        var map = new google.maps.Map(document.getElementById("map-canvas"), myOptions);
+        map = new google.maps.Map(document.getElementById("map-canvas"), myOptions);
         
         // Add target-marker to the map of current lat/lng
         var marker = new google.maps.Marker({
@@ -40,6 +42,11 @@ $( document ).on( "pagecreate", "#map-page", function() {
         google.maps.event.addListener(map, 'center_changed', function() {
             marker.setPosition(map.getCenter())
           });
-
     }
 });
+
+function startObserver() {
+	var curLatLon = map.getCenter();
+	var url = "http://missa-juna.herokuapp.com/debug/traintable/" + curLatLon.lat() + "/" + curLatLon.lng();
+	window.location.replace(url);
+}

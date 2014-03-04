@@ -28,9 +28,13 @@
 	<div data-url="map-page" data-role="page" id="map-page">
 	
 		<div data-role="header" data-theme="a">
-			<button class="ui-btn ui-icon-navigation ui-btn-icon-left ui-shadow ui-corner-all ui-btn-inline">Aseta sijaintisi</button>
-			<h1>Missä juna?</h1>
-			<a href="#" class="ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all ui-btn-inline">No text</a>
+		
+			<div class="ui-grid-b ui-responsive">
+			    <div class="ui-block-a"><button onClick="startObserver();" class="ui-btn ui-icon-navigation ui-btn-icon-left ui-shadow ui-corner-all ui-btn-inline">Aseta sijaintisi</button></div>
+			    <div class="ui-block-b center"><img src="@routes.Assets.at("images/train.png")" width="50px" height="50px" alt="Missä juna?" /></div>
+			    <div class="ui-block-c right" style="align: right"><a href="https://www.linkedin.com/in/roikonen" class="ui-btn ui-icon-info ui-btn-icon-notext ui-corner-all ui-btn-inline">No text</a></div>
+			</div>
+			
 		</div><!-- /header -->
 		
 		<div role="main" class="ui-content" id="map-canvas">
