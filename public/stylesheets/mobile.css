@@ -1,16 +1,2 @@
 #map-page { width: 100%; height: 100%; padding: 0}
 #map-canvas { width: 100%; height: 90%; padding: 0}
-
-.center
-{
-margin-left: auto;
-margin-right: auto;
-text-align: center;
-}
-
-.right
-{
-position: absolute;
-right: 0px;
-text-align: right;
-}
