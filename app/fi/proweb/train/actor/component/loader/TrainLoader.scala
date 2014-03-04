@@ -16,9 +16,9 @@ object TrainLoader {
 class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidator], Props[TrainFormatter], url) {
 
   val TRY_BEFORE_JAMMED = 10
-  val GATHER_TRAIN_HISTORY_IN_KM = 10
-  val WHEN_OPTIMIZING_SAVE_EVERY = 10
-  val HISTORY_DATA_MAX_SIZE = 4
+  val GATHER_TRAIN_HISTORY_IN_KM = 5
+  val WHEN_OPTIMIZING_SAVE_EVERY = 5
+  val HISTORY_DATA_MAX_SIZE = 10
   val MIN_DISTANCE_IN_M_BETWEEN_SUCCESSIVE_SAMPLES = 50
   val MAX_DISTANCE_IN_KM_BETWEEN_SUCCESSIVE_SAMPLES = 200
   val JAMMED_RATIO_SAMPLE_Q_MAX_SIZE = 100
@@ -143,7 +143,7 @@ class TrainLoader(url: String) extends DataLoader[Train](Props[TrainDataValidato
   }
 
   private def optimizeHistoryData {
-    if (historyData.size > HISTORY_DATA_MAX_SIZE && historyData.size > 2) {
+    if (historyData.size > HISTORY_DATA_MAX_SIZE) {
 //      historyData.foreach(t => print(t._1 + " "))
 //      println
       historyData = historyData.filter(t => t._1 % WHEN_OPTIMIZING_SAVE_EVERY == 0 || t._1 == (historyId-1))
