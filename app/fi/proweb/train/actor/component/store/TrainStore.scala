@@ -18,8 +18,8 @@ case object GetStoreTraintable
 
 object TrainStore {
 
-  val TRAINTABLE_NOT_INITIALIZED = Traintable("Not initialized", List[models.Train]())
-  val TRAINTABLE_NO_CONTENT = Traintable("No content", List[models.Train]())
+  val TRAINTABLE_NOT_INITIALIZED = Traintable("Initializing...", List[models.Train]())
+  val TRAINTABLE_NO_CONTENT = Traintable("Gathering data...", List[models.Train]())
 
   def props(locLat: Double, locLon: Double): Props = Props(new TrainStore(locLat, locLon))
 
