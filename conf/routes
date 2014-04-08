@@ -4,6 +4,7 @@
 
 # Home page
 GET     /                                        controllers.Application.index
+GET     /:locLat/:locLon                         controllers.Application.traintableDebug(locLat: Double, locLon: Double)
 
 # With custon Google API Key
 GET     /key/:googleApiKey                       controllers.Application.mobile(googleApiKey: String)
