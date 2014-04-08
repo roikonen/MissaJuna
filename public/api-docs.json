@@ -1,0 +1,11 @@
+{
+	"apiVersion":"1.0",
+	"swaggerVersion":"1.2",
+	"apis":
+		[
+		 {
+			 "path": "/traintable",
+			 "description": "Traintable about trains of interest" 
+		 }
+	    ]
+}
